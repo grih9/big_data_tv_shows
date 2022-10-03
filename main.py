@@ -6,7 +6,7 @@ from datetime import datetime
 
 from selenium.webdriver.common.by import By
 
-START_ID = 1
+START_ID = 22354
 
 DRIVER_PATH = './driver/chromedriver'
 service = Service(DRIVER_PATH)
@@ -38,48 +38,68 @@ with open("tvshows.csv", "a", encoding="utf-8", newline='') as write_file:
             continue
         table = driver.find_elements(By.XPATH,
                                      './/div[@class="ShowDetails__section"]//table//tr[@class="info-row"]')
-        auditory = table[4].text.split(": ")[1].split(" из ")
-        show_data["auditory"] = int(auditory[0].replace(" ", ""))
-        assert table[4].text.split(":")[0] == "Смотрящих", f"{id=}"
-        if show_data["auditory"] < 10:
-            print(f"Мало данных для {id=}, {show_data['auditory']=}")
-            continue
+        show_data["auditory"] = 0
+        show_data["genre"] = None
+        show_data["country"] = None
+        show_data["dates"] = None
+        show_data["channel"] = None
+        show_data["total_length"] = None
+        show_data["episode_length"] = None
+        show_data["rating_imdb"] = None
+        show_data["rating_kinopoisk"] = None
+        show_data["imdb_count"] = None
+        show_data["kinopoisk_count"] = None
+        for elem in table:
+            elem_name = elem.text.split(":")[0]
+            elem_data = elem.text.split(":")[1]
+            if elem_name == "Смотрящих":
+                auditory = elem_data.split(" из ")
+                show_data["auditory"] = int(auditory[0].replace(" ", ""))
+                if show_data["auditory"] <= 3:
+                    print(f"Мало данных для {id=}, {show_data['auditory']=}")
+                    continue
+            elif elem_name == "Жанры":
+                show_data["genre"] = elem_data.lstrip(" ").split(",")
 
-        show_data["country"] = table[1].text.split(": ")[1].split(",")
-        assert table[1].text.split(": ")[0] == "Страна", f"{id=}"
-        show_data["genre"] = table[2].text.split(": ")[1].split(",")
-        assert table[2].text.split(": ")[0] == "Жанры", f"{id=}"
-        show_data["dates"] = table[0].text.split(": ")[1]
-        assert table[0].text.split(": ")[0] == "Даты выхода", f"{id=}"
-        try:
-            show_data["channel"] = table[3].text.split(": ")[1]
-            assert table[3].text.split(": ")[0] == "Канал", f"{id=}"
-        except Exception as e:
+            elif elem_name == "Страна":
+                show_data["country"] = elem_data.lstrip(" ").split(",")
+
+            elif elem_name == "Даты выхода":
+                show_data["dates"] = elem_data.lstrip(" ")
+            elif elem_name == "Канал":
+                try:
+                    show_data["channel"] = elem_data.lstrip(" ")
+                except Exception as e:
+                    show_data["channel"] = None
+            elif elem_name == "Общая длительность":
+                show_data["total_length"] = elem_data.lstrip(" ")
+            elif elem_name == "Длительность серии":
+                show_data["episode_length"] = elem_data.lstrip(" ")
+            elif elem_name == "Рейтинг IMDB":
+                rating_imdb = elem_data.lstrip(" ")
+                show_data["rating_imdb"] = float(rating_imdb.split(" из ")[0])
+                show_data["imdb_count"] = int("".join(rating_imdb.split(" из ")[1].split(" ")[1:]))
+            elif elem_name == "Рейтинг Кинопоиска":
+                rating_kinopoisk = elem_data.lstrip(" ")
+                show_data["rating_kinopoisk"] = float(rating_kinopoisk.split(" из ")[0])
+                show_data["kinopoisk_count"] = int("".join(rating_kinopoisk.split(" из ")[1].split(" ")[1:]))
+
+        if not show_data["channel"]:
             print(f"Нет канала для {id=}")
-            show_data["channel"] = None
-            assert table[3].text == "Канал:", f"{id=}"
-        show_data["total_length"] = table[5].text.split(": ")[1]
-        assert table[5].text.split(": ")[0] == "Общая длительность", f"{id=}"
-        show_data["episode_length"] = table[6].text.split(": ")[1]
-        assert table[6].text.split(": ")[0] == "Длительность серии", f"{id=}"
-
-        if len(table) >= 8 and table[7].text.split(": ")[0] == "Рейтинг IMDB":
-            rating_imdb = table[7].text.split(": ")[1]
-            show_data["rating_imdb"] = float(rating_imdb.split(" из ")[0])
-            show_data["imdb_count"] = int("".join(rating_imdb.split(" из ")[1].split(" ")[1:]))
-        elif len(table) >= 8 and table[7].text.split(": ")[0] == "Рейтинг Кинопоиска":
-            rating_kinopoisk = table[7].text.split(": ")[1]
-            show_data["rating_kinopoisk"] = float(rating_kinopoisk.split(" из ")[0])
-            show_data["kinopoisk_count"] = int("".join(rating_kinopoisk.split(" из ")[1].split(" ")[1:]))
-
-        if len(table) >= 9 and table[8].text.split(": ")[0] == "Рейтинг IMDB":
-            rating_imdb = table[8].text.split(": ")[1]
-            show_data["rating_imdb"] = float(rating_imdb.split(" из ")[0])
-            show_data["imdb_count"] = int("".join(rating_imdb.split(" из ")[1].split(" ")[1:]))
-        elif len(table) >= 9 and table[8].text.split(": ")[0] == "Рейтинг Кинопоиска":
-            rating_kinopoisk = table[8].text.split(": ")[1]
-            show_data["rating_kinopoisk"] = float(rating_kinopoisk.split(" из ")[0])
-            show_data["kinopoisk_count"] = int("".join(rating_kinopoisk.split(" из ")[1].split(" ")[1:]))
+        if not show_data["rating_imdb"]:
+            print(f"Нет оценки IMDB для {id=}")
+        if not show_data["rating_kinopoisk"]:
+            print(f"Нет оценки Кинопоиска для {id=}")
+        if not show_data["episode_length"]:
+            print(f"Нет длительности эпизода для {id=}")
+        if not show_data["total_length"]:
+            print(f"Нет общей длительности для {id=}")
+        if not show_data["genre"]:
+            print(f"Нет жанров для {id=}")
+        if not show_data["country"]:
+            print(f"Нет стран для {id=}")
+        if not show_data["dates"]:
+            print(f"Нет дат для {id=}")
 
         show_data["show_id"] = id
         title = driver.find_elements(By.XPATH,
@@ -98,14 +118,19 @@ with open("tvshows.csv", "a", encoding="utf-8", newline='') as write_file:
         rating_myshows = driver.find_elements(By.XPATH, './/div[@class="ShowRating-value"]//div')[0]
         show_data["rating_myshows"] = float(rating_myshows.text)
 
-        rating_count = driver.find_elements(By.XPATH, './/div[@class="ShowRating-value"]//div//span[@class="Counter"]')[0]
-        show_data["rating_count"] = int(rating_count.text.replace("( ", "").replace(" )", "").replace(" ", ""))
+        try:
+            rating_count = driver.find_elements(By.XPATH, './/div[@class="ShowRating-value"]//div//span[@class="Counter"]')[0]
+            show_data["rating_count"] = int(rating_count.text.replace("( ", "").replace(" )", "").replace(" ", ""))
+        except Exception:
+            show_data["rating_count"] = 0
+            print(f"Нет оценок для {id=}")
 
         show_all = driver.find_elements(By.XPATH, './/div[@class="show-characters__show-all"]//span')
         if len(show_all) != 0:
             show_all[0].click()
 
         actors_list = driver.find_elements(By.XPATH, './/div[@class="show-characters__list"]//a')
+        show_data["actors"] = []
         if len(actors_list) > 0:
             for actor in actors_list:
                 actor_data = actor.text.split("\n")
@@ -115,6 +140,7 @@ with open("tvshows.csv", "a", encoding="utf-8", newline='') as write_file:
                     show_data["actors"].append(actor_data[1])
                 else:
                     print(f"ОШИБКА АКТЕР, {id=}")
+                    show_data["actors"] = None
         else:
             show_data["actors"] = None
             print(f"Нет актеров для {id=}")
