@@ -5,8 +5,8 @@ from selenium.webdriver.chrome.service import Service
 from datetime import datetime
 
 from selenium.webdriver.common.by import By
-
-START_ID = 22354
+# 49833  42140
+START_ID = 49834
 
 DRIVER_PATH = './driver/chromedriver'
 service = Service(DRIVER_PATH)
@@ -57,7 +57,8 @@ with open("tvshows.csv", "a", encoding="utf-8", newline='') as write_file:
                 show_data["auditory"] = int(auditory[0].replace(" ", ""))
                 if show_data["auditory"] <= 3:
                     print(f"Мало данных для {id=}, {show_data['auditory']=}")
-                    continue
+                    show_data["auditory"] = None
+                    break
             elif elem_name == "Жанры":
                 show_data["genre"] = elem_data.lstrip(" ").split(",")
 
@@ -83,7 +84,8 @@ with open("tvshows.csv", "a", encoding="utf-8", newline='') as write_file:
                 rating_kinopoisk = elem_data.lstrip(" ")
                 show_data["rating_kinopoisk"] = float(rating_kinopoisk.split(" из ")[0])
                 show_data["kinopoisk_count"] = int("".join(rating_kinopoisk.split(" из ")[1].split(" ")[1:]))
-
+        if show_data["auditory"] is None:
+            continue
         if not show_data["channel"]:
             print(f"Нет канала для {id=}")
         if not show_data["rating_imdb"]:
