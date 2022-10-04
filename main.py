@@ -6,7 +6,7 @@ from datetime import datetime
 
 from selenium.webdriver.common.by import By
 # 49833  42140
-START_ID = 49834
+START_ID = 98573
 
 DRIVER_PATH = './driver/chromedriver'
 service = Service(DRIVER_PATH)
