@@ -1,3 +1,4 @@
 .idea/
 *.rsa
 __pycache__/
+connection_data.py

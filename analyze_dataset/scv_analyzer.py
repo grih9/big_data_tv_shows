@@ -1,6 +1,6 @@
 import csv
 
-from constants import MONGO_HOST, MONGO_PORT, MONGO_DB, SHOWS_FILE
+from connection_data import MONGO_HOST, MONGO_PORT, MONGO_DB
 from wrappers.MongoConnector import MongoConnector
 
 

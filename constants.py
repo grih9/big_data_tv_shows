@@ -1,11 +1,3 @@
-SSH_USERNAME = "ubuntu"
-MONGO_HOST = "85.192.33.171"
-MONGO_PORT = 27017
-MONGO_DB = "myshows_data"
-MONGO_SHOWS_COLLECTION = "tv_shows"
-LOCAL_HOST = '127.0.0.1'
-LOCAL_PORT = 5000
-
 SHOWS_FILE = "tvshows.csv"
 EPISODES_FILE = "episodes.csv"
 
