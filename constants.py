@@ -9,4 +9,5 @@ SHOW_DATA = {"show_id": 0, "title": "", "original_title": "", "status": "", "aud
              "country": [], "genre": [], "channel": "", "total_length": 0, "episode_length": 0, "dates": "",
              "actors": [], "seasons": 0, "episodes_in_season": []}
 NUMBER_OF_SHOWS = 90000
-NUMBER_OF_EPISODES = 18500000
+NUMBER_OF_EPISODES = 185000000
+

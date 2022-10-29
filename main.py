@@ -1,27 +1,71 @@
-from analyze_dataset.scv_analyzer import write_tv_shows_data
+from multiprocessing import Process
+
+from analyze_dataset.scv_analyzer import write_tv_shows_data, write_episodes_from_file
 from constants import SHOWS_FILE
+from scrapper.episodes import scrap_episodes_from_db, scrap_episodes
 
 if __name__ == '__main__':
-    write_tv_shows_data(SHOWS_FILE)
-    #scrap_shows(0)
-    # ssh = paramiko.SSHClient()
-    # ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    # ssh.connect(hostname=SSH_HOST, username=SSH_USERNAME, pkey="./key.pem")
-    # print("Connected")
-    # server = SSHTunnelForwarder(
-    #     (SSH_HOST, 22),
-    #     ssh_username=SSH_USERNAME,
-    #     ssh_pkey="./key.pem",
-    #     remote_bind_address=(LOCAL_HOST, LOCAL_PORT),
-    #     local_bind_address=(LOCAL_HOST, LOCAL_PORT),
-    # )
-    #
-    # server.start()
-    #
-    # headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0'}
-    # r = requests.get('http://127.0.0.1:5000', headers=headers).content
-    # print(r)
-    # server.stop()
+    """
+        write shows from file to db
+    """
+    #write_tv_shows_data(SHOWS_FILE)
+
+
+
+    """
+        write episodes to db
+    """
+    #for file in ["episodes.csv", "episodes2.csv", "episodes3.csv", "episodes4.csv"]:
+    # for file in ["episodes5.csv", "episodes6.csv", "episodes7.csv"]:
+    #     print(f"Считывание файла {file}")
+    #     write_episodes_from_file(file)
+    # p1 = Process(target=write_episodes_from_file, args=("episodes8.csv",))
+    # p2 = Process(target=write_episodes_from_file, args=("episodes9.csv",))
+    # p3 = Process(target=write_episodes_from_file, args=("episodes10.csv",))
+    # p1.start()
+    # p2.start()
+    # p3.start()
+    # p1.join()
+    # p2.join()
+    # p3.join()
+
+    """
+        scrap shows
+    """
+    # scrap_shows(0)
+
+    """
+        scrap episodes
+    """
+
+    #scrap_episodes_from_db(1000)
+
+    # p1 = Process(target=scrap_episodes_from_db, args=(1, 899,))
+    # p2 = Process(target=scrap_episodes_from_db, args=(2, 899,))
+    # p3 = Process(target=scrap_episodes_from_db, args=(3, 899,))
+    # p1 = Process(target=scrap_episodes_from_db, args=(1, 80, {"country": "Россия", "auditory": {"$gte": 80},
+    #                                                           "episodes.episodes.$": {"$ne": None}},))
+    # p2 = Process(target=scrap_episodes_from_db, args=(2, 80, {"country": "Россия", "auditory": {"$gte": 80},
+    #                                                           "episodes.episodes.$": {"$ne": None}},))
+    # p3 = Process(target=scrap_episodes_from_db, args=(3, 80, {"country": "Россия", "auditory": {"$gte": 80},
+    #                                                           "episodes.episodes.$": {"$ne": None}},))
+    p1 = Process(target=scrap_episodes_from_db, args=(1, 900, {"show_id": 1989, "auditory": {"$gte": 900},
+                                                               "episodes.episodes.rating_count": 0},))
+    p2 = Process(target=scrap_episodes_from_db, args=(2, 900, {"show_id": 1989, "auditory": {"$gte": 900},
+                                                               "episodes.episodes.rating_count": 0},))
+    p3 = Process(target=scrap_episodes_from_db, args=(3, 900, {"show_id": 1989, "auditory": {"$gte": 900},
+                                                               "episodes.episodes.rating_count": 0},))
+    p1.start()
+    p2.start()
+    p3.start()
+    p1.join()
+    p2.join()
+    p3.join()
+
+    #Process(scrap_episodes("episodes5.csv", 17676067, 17676075,))
+    """
+            scrap episodes parallel
+    """
     # p1 = Process(target=scrap_episodes, args=("episodes.csv", 42721, int(1 * NUMBER_OF_EPISODES / 24) - 1,))
     # p2 = Process(target=scrap_episodes, args=("episodes2.csv", int(1 * NUMBER_OF_EPISODES / 24) - 1, int(2 * NUMBER_OF_EPISODES / 24) - 1,))
     # p3 = Process(target=scrap_episodes, args=("episodes3.csv", int(2 * NUMBER_OF_EPISODES / 24) - 1, int(3 * NUMBER_OF_EPISODES / 24) - 1,))
