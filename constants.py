@@ -1,5 +1,5 @@
-SHOWS_FILE = "tvshows.csv"
-EPISODES_FILE = "episodes.csv"
+SHOWS_FILE = "datasets/tvshows.csv"
+EPISODES_FILE = "datasets/episodes.csv"
 
 DRIVER_PATH = './driver/chromedriver'
 BASE_URL = "https://myshows.me/view"

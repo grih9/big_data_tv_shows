@@ -60,6 +60,18 @@ class MongoConnector:
             data = list(collection.find(condition))
         return data
 
+    def get_shows_by_auditory(self, auditory, sort=None):
+        return self.get_shows(condition={"auditory": {"$gte": auditory}}, sort=sort)
+
+    def get_shows_by_country(self, country, sort=None):
+        return self.get_shows(condition={"country": country}, sort=sort)
+
+    def get_shows_by_myshows_rating(self, rating_myshows, sort=None):
+        return self.get_shows(condition={"rating_myshows": {"$gte": rating_myshows}}, sort=sort)
+
+    def get_shows_by_channel(self, channel, sort=None):
+        return self.get_shows(condition={"channel": channel}, sort=sort)
+
     def update_episodes(self, episode_id, show_title, episode_title, season, episode, auditory, auditory_rate,
                         rating_myshows, rating_count, episode_length, date, number_of_comments, show_id=0):
 

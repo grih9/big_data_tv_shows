@@ -21,29 +21,29 @@ def write_episodes_from_file(file):
 
     with open(file, 'r', newline='', encoding="utf-8") as shows_file:
         reader = csv.reader(shows_file)
-        if file == "episodes.csv":
+        if "episodes.csv" in file:
             headers = next(reader)
             print(f"Файл {file}, пропуск элементов")
             for i in range(19500):
                 next(reader)
-        if file == "episodes2.csv":
+        if "episodes2.csv" in file:
             print(f"Файл {file}, пропуск элементов")
             # for i in range(15000):
             #     next(reader)
-        if file == "episodes3.csv":
+        if "episodes3.csv" in file:
             print(f"Файл {file}, пропуск элементов")
             for i in range(29500):
                 next(reader)
         print(f"Файл {file}, пропуск элементов")
-        if file == "episodes5.csv":
+        if "episodes5.csv" in file:
             print(f"Файл {file}, пропуск элементов")
             for i in range(64000):
                 next(reader)
-        if file == "episodes6.csv":
+        if "episodes6.csv" in file:
             print(f"Файл {file}, пропуск элементов")
             for i in range(70000):
                 next(reader)
-        if file == "episodes7.csv":
+        if "episodes7.csv" in file:
             print(f"Файл {file}, пропуск элементов")
             for i in range(75000):
                 next(reader)

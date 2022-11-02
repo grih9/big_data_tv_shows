@@ -15,13 +15,13 @@ if __name__ == '__main__':
     """
         write episodes to db
     """
-    #for file in ["episodes.csv", "episodes2.csv", "episodes3.csv", "episodes4.csv"]:
-    # for file in ["episodes5.csv", "episodes6.csv", "episodes7.csv"]:
+    #for file in ["datasets/episodes.csv", "datasets/episodes2.csv", "datasets/episodes3.csv", "datasets/episodes4.csv"]:
+    # for file in ["datasets/episodes5.csv", "datasets/episodes6.csv", "datasets/episodes7.csv"]:
     #     print(f"Считывание файла {file}")
     #     write_episodes_from_file(file)
-    # p1 = Process(target=write_episodes_from_file, args=("episodes8.csv",))
-    # p2 = Process(target=write_episodes_from_file, args=("episodes9.csv",))
-    # p3 = Process(target=write_episodes_from_file, args=("episodes10.csv",))
+    # p1 = Process(target=write_episodes_from_file, args=("datasets/episodes8.csv",))
+    # p2 = Process(target=write_episodes_from_file, args=("datasets/episodes9.csv",))
+    # p3 = Process(target=write_episodes_from_file, args=("datasets/episodes10.csv",))
     # p1.start()
     # p2.start()
     # p3.start()

@@ -155,7 +155,7 @@ def scrap_shows(start_id=START_ID):
     print(f"Сборка сериалов со {start_id=}")
     time_start = datetime.now()
     try:
-        file = open("tvshows.csv", "x")
+        file = open("../datasets/tvshows.csv", "x")
         csv_writer = csv.writer(file)
         csv_writer.writerow(list(show_data.keys()))
         file.close()
