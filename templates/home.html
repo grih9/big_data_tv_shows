@@ -1,0 +1,25 @@
+{% extends 'base.html'  %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block head %}
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+{% endblock %}
+
+
+{% block content %}
+    <form action="#">
+    <input class="btn btn-primary mt-3 me-2" type="submit" value="Cоздание датасета"/>
+    </form>
+    <form action="#">
+    <input class="btn btn-primary mt-3 me-2" type="submit" value="Запись в базу данных"/>
+    </form>
+    <form action="{{ url_for('dashboard') }}">
+    <input class="btn btn-primary mt-3 me-2" type="submit" value="Графики"/>
+    </form>
+{% endblock %}

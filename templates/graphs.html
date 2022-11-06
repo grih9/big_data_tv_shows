@@ -1,0 +1,30 @@
+{% extends 'base.html'  %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block head %}
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
+    <title>Document</title>
+    {{ js_resources|indent(4)|safe }}
+    {{ css_resources|indent(4)|safe }}
+    {{ plot_script1|indent(4)|safe }}
+    {{ plot_script2|indent(4)|safe }}
+    <script type="text/javascript">
+        window.onload = function(){
+            $("#header").hide();
+};
+        </script>
+{% endblock %}
+
+{% block content %}
+    <h1 style="text-align: center; margin-bottom: 40px;">{{ title_gr }}</h1>
+    <div style="display: flex; justify-content: center;">
+        {{ plot_div1|indent(4)|safe }}
+    </div>
+    <div style="display: flex; justify-content: center;">
+        {{ plot_div2|indent(4)|safe }}
+    </div>
+{% endblock %}
