@@ -28,7 +28,6 @@ def graphs_imdb():
     controls_array = controls.values()
 
     callback = CustomJS(args=dict(source=source_imdb, controls=controls), code="""
-            console.log('Tap event occurred at x-position: ');
             if (!window.full_data_save) {
                 window.full_data_save = JSON.parse(JSON.stringify(source.data));
             }
@@ -77,7 +76,7 @@ def graphs_imdb():
 
     script, div = components(layout_row)
     return render_template(
-        'dashboard.html',
+        'dashboard_auditory.html',
         plot_script=script,
         plot_div=div,
         js_resources=INLINE.render_js(),
@@ -104,7 +103,6 @@ def graphs_kinopoisk():
 
     callback = CustomJS(args=dict(source=source_kinopoisk, controls=controls), code="""
             if (!window.full_data_save1) {
-                console.log("HELLO")
                 window.full_data_save1 = JSON.parse(JSON.stringify(source.data));
             }
             var full_data = window.full_data_save1;
@@ -151,7 +149,7 @@ def graphs_kinopoisk():
 
     script, div = components(layout_row)
     return render_template(
-        'dashboard.html',
+        'dashboard_auditory.html',
         plot_script=script,
         plot_div=div,
         js_resources=INLINE.render_js(),
@@ -244,21 +242,19 @@ def graphs_channels():
         plot_div=div,
         js_resources=INLINE.render_js(),
         css_resources=INLINE.render_css(),
-        title_gr="IMDB vs MyShows",
-        graph_data=None
+        title_gr="Аналитика каналов"
     ).encode(encoding='UTF-8')
 
 
 @app.route('/dashboard')
 def dashboard():
     return render_template(
-        'dashboard.html',
+        'dashboard_main.html',
         plot_script="",
         plot_div="",
         js_resources=INLINE.render_js(),
         css_resources=INLINE.render_css(),
-        title_gr="Графики",
-        graph_data=None
+        title_gr="Dashboard",
     ).encode(encoding='UTF-8')
 
 

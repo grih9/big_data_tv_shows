@@ -65,13 +65,11 @@
 <script type="text/javascript">
         let reload = "not";
         window.onmousemove = function () {
-          console.log(reload);
           if (document.readyState === "complete" && reload === "not") {
             $("#loading").hide();
             $("#content").show();
             reload = "not"
           } else {
-            console.log(document.readyState);
             console.log('Страница грузится');
           }
         };
@@ -81,7 +79,6 @@
         window.onbeforeunload = function() {
             reload = "reload";
             console.log("Unload");
-            console.log(reload);
             loading();
 };
 </script>
