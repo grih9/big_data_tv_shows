@@ -1,10 +1,10 @@
 from bokeh.client import pull_session
 from bokeh.embed import components, server_session
 from bokeh.layouts import column, row
-from bokeh.models import ColumnDataSource, Slider, CustomJS, Select
+from bokeh.models import ColumnDataSource, Slider, CustomJS, Select, NumericInput
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify, request
 
 from connection_data import MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB
 from wrappers.MongoConnector import MongoConnector
@@ -12,8 +12,7 @@ from wrappers.MongoConnector import MongoConnector
 app = Flask(__name__)
 
 mongo = MongoConnector(MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB)
-DATA = mongo.get_shows_by_auditory(auditory=10000)
-print(123)
+DATA = mongo.get_shows_by_auditory(auditory=10)
 
 @app.route('/dashboard/votes/imdb')
 def graphs_imdb():
@@ -162,93 +161,92 @@ def graphs_kinopoisk():
     ).encode(encoding='UTF-8')
 
 
-@app.route('/dashboard/channels2')
-def graphs_channels2():
-    source_imdb = ColumnDataSource()
+@app.route('/dashboard/channels')
+def graphs_channels():
+    source = ColumnDataSource()
 
-    country_list = ['Россия', 'США', 'Великобритания', 'Германия', 'Япония', 'Китай', 'Южная Корея', 'Бразилия', 'Испания',
-                    'Украина', 'Канада', 'Беларусь']
+    country_list = ["Все", 'Россия', 'США', 'Великобритания', 'Германия', 'Япония', 'Китай', 'Южная Корея', 'Бразилия',
+                    'Испания', 'Украина', 'Канада', 'Беларусь', "Австралия", "Франция", "Таиланд", "Турция", "Италия", "СССР"]
+    country_list.sort()
     controls = {
-        "reviews": Slider(title="Минимальное число зрителей", value=10, start=100, end=100000, step=150, width=470),
+        "reviews": NumericInput(title="Милимальное число зрителей", value=10, placeholder="Введите значение", low=10, high=100000, mode="int"),
         "min_year": Slider(title="Начальная дата", start=1970, end=2023, value=1970, step=1),
         "max_year": Slider(title="Конечная дата", start=1970, end=2023, value=2023, step=1),
-        "genre": Select(title="Страна", value="Все", options=country_list)
+        "country": Select(title="Страна", value="Все", options=country_list),
     }
 
     controls_array = controls.values()
 
-    callback = CustomJS(args=dict(source=source_imdb, controls=controls), code="""
-            if (!window.full_data_save) {
-                window.full_data_save = JSON.parse(JSON.stringify(source.data));
+    shows = DATA
+    # x_values = [",".join(elem["country"]) for elem in shows]
+    # x_list = list(set([",".join(elem["country"]) for elem in shows]))
+    # y_values = [x_values.count(elem) for elem in x_list]
+    # sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
+
+    x_values = [elem["channel"] for elem in shows]
+    x_list = list(set([elem["channel"] for elem in shows]))
+    y_values = [x_values.count(elem) for elem in x_list]
+    sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
+
+    fig = figure(height=600, width=1080, tooltips=[("Канал", "@channel"), ("Число сериалов", "@serials")],
+                 x_range=sorted_x)
+    fig.vbar(x="x", top="top", source=source, width=0.9)
+    fig.xaxis.axis_label = "Каналы"
+    fig.yaxis.axis_label = "Число сериалов"
+
+    fig.x_range.factors = sorted_x
+    callback = CustomJS(args=dict(source=source, figure=fig, controls=controls), code="""
+            var xml = new XMLHttpRequest();
+            xml.open("POST", "http://127.0.0.1:5000/api/channels", true);
+            xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xml.onload = function() {
+                reload = "not";
+                $("#loading").hide();
+                $("#content").show();
+                var dataReply = JSON.parse(this.responseText)
+                console.log(dataReply);
+                source.data = dataReply;
+                figure.x_range.factors = dataReply.sorted_x;
+                figure.change.emit();
+                source.change.emit();
             }
-            var full_data = window.full_data_save;
-            var full_data_length = full_data.x.length;
-            var new_data = { x: [], y: [], color: [], title_gr: [], country: [], auditory: [], released: [], channel: [] }
-            for (var i = 0; i < full_data_length; i++) {
-                if (full_data.auditory[i] === null || full_data.released[i] === null || full_data.country[i] === null ||
-                 full_data.channel[i] === null)
-                    continue;
-                if (
-                    full_data.auditory[i] > controls.reviews.value &&
-                    Number(full_data.released[i].slice(-4)) >= controls.min_year.value &&
-                     Number(full_data.released[i].slice(-4)) <= controls.max_year.value &&
-                     (controls.country.value === 'All' || full_data.country[i].split(",").some(ele => ele.trim() === controls.country.value))
-                ) {
-                    Object.keys(new_data).forEach(key => new_data[key].push(full_data[key][i]));
-                }
-            }
-            source.data = new_data;
-            source.change.emit();
+            
+            var dataval = {Minv: controls.min_year.value, 
+            Maxv: controls.max_year.value,
+            Reviewsv: controls.reviews.value,
+            Countryv: controls.country.value};
+            
+            var dataSend = JSON.stringify(dataval);
+            
+            xml.send(dataSend);
+            reload = "reload";
+            loading();
         """)
 
-    fig_imdb = figure(height=800, width=1080, tooltips=[("Title", "@title_gr"), ("Rating_myshows", "@y"),
-                                                       ("Rating_imdb", "@x"), ("auditory", "@auditory")],
-                      x_range=(1, 10), y_range=(2, 5))
-    fig_imdb.circle(x="x", y="y", source=source_imdb, size=8, color="color", line_color=None)
-    fig_imdb.xaxis.axis_label = "IMDB Rating"
-    fig_imdb.yaxis.axis_label = "MyShows Rating"
-
-    shows = DATA
-
-    source_imdb.data = dict(
-        x=[elem["rating_imdb"] for elem in shows],
-        y=[elem["rating_myshows"] for elem in shows],
-        auditory=[elem["auditory"] for elem in shows],
-        color=["#FF9900" for _ in shows],
-        title_gr=[elem["title"] for elem in shows],
-        genre=[elem['genre'][0] if len(elem['genre']) > 0 else None for elem in shows]
+    source.data = dict(
+        x=x_list,
+        top=y_values,
+        channel=x_list,
+        serials=y_values,
+        sorted_x=sorted_x
     )
-
-    #output_file("graph.html")
-    #show(fig_imdb)
 
     for single_control in controls_array:
         single_control.js_on_change('value', callback)
 
     inputs_column = column(*controls_array, width=480, height=500)
-    layout_row = row([inputs_column, fig_imdb])
+    layout_row = row([inputs_column, fig])
 
     script, div = components(layout_row)
     return render_template(
-        'dashboard.html',
+        'dashboard_channels.html',
         plot_script=script,
-        plot_div=None,
+        plot_div=div,
         js_resources=INLINE.render_js(),
         css_resources=INLINE.render_css(),
         title_gr="IMDB vs MyShows",
-        graph_data="IMDB"
+        graph_data=None
     ).encode(encoding='UTF-8')
-@app.route('/dashboard/channels')
-def graphs_channels():
-    with pull_session(url="http://localhost:5006/") as session:
-        # generate a script to load the customized session
-        script = server_session(session_id=session.id, url='http://localhost:5006')
-        # use the script in the rendered page
-        return render_template("dashboard.html", script=script, plot_script="",
-        plot_div="",
-        js_resources=INLINE.render_js(),
-        css_resources=INLINE.render_css(), title_gr="Channels",
-        graph_data=None, template="Flask")
 
 
 @app.route('/dashboard')
@@ -278,6 +276,31 @@ def home():
     ).encode(encoding='UTF-8')
     # output_file("graph2.html")
     # show(fig_kinopoisk)
+
+
+@app.route('/api/channels', methods=['POST'])
+def api_channels():
+    data_get = request.get_json(force=True)
+
+    print(data_get)
+    if data_get["Countryv"] == "Все":
+        shows = mongo.get_shows(condition={"auditory": {"$gte": data_get["Reviewsv"]}})
+                                           #"date_start": {"$gte": data_get["Minv"], "$lte": data_get["Maxv"]}})
+    else:
+        shows = mongo.get_shows(condition={"auditory": {"$gte": data_get["Reviewsv"]}, "country": data_get["Countryv"]})
+    x_values = [elem["channel"] for elem in shows]
+    x_list = list(set([elem["channel"] for elem in shows]))
+    y_values = [x_values.count(elem) for elem in x_list]
+    sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
+
+    source = dict(
+        x=x_list,
+        top=y_values,
+        channel=x_list,
+        serials=y_values,
+        sorted_x=sorted_x
+        )
+    return jsonify(source)
 
 
 if __name__ == "__main__":
