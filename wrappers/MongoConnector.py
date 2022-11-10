@@ -130,3 +130,15 @@ class MongoConnector:
                                         {"$set": {f"episodes": episodes_data}})
             if ret.modified_count != 1:
                 print(f"[ОШИБКА] элемент не обновился для {episode_id}, {show_title}, {show_id}, {ret.modified_count}")
+
+    def update_show_param(self, show_id, param, value):
+        collection = self.get_collection(MONGO_SHOWS_COLLECTION)
+        data = list(collection.find({"show_id": int(show_id)}))
+        if len(data) == 0:
+            print("[ОШИБКА] Ниодного шоу не подходит под параметры. ", show_id)
+            return
+        ret = collection.update_one({"show_id": int(show_id)},
+                                    {"$set": {f"{param}": value}})
+        if ret.modified_count != 1:
+            print(f"[ОШИБКА] элемент не обновился для {show_id}, {ret.modified_count}")
+

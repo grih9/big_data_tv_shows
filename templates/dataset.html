@@ -1,0 +1,92 @@
+{% extends 'base.html'  %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+{% endblock %}
+
+
+{% block content %}
+<div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+    <h1 class="display-4 fw-normal">Выбор датасета</h1>
+    <p class="fs-5 text-muted">Вы можете выбрать датасеты для загрузки и выгрузки данных с помощью полей ниже.<br>
+        Вы можете создать пустой файл и начать сбор данных или использовать уже готовый
+        датасет.</p>
+    <p class="fs-4">Внимание! Выбранный датасет будет использоваться для работы с базой данных и скраппинга
+        веб-страниц. <b>ФАЙЛ ДОЛЖЕН НАХОДИТСЯ В ДИРЕКТОРИИ datasets/custom рядом с исполняемым файлом</b></p>
+</div>
+<div class="row row-cols-1 row-cols-md-2 mb-2 text-center">
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">Датасет для сериалов и тв шоу</h4>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title pricing-card-title">На данный момент используется датасет:
+                    <b>{{ dataset_shows }}</b></h4>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <small class="fs-6"><a href="">Выбрать значение по умолчанию</a></small>
+                    <p></p>
+
+                    <form action="/api/dataset/shows" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+                        <li>
+                            <div class="fs-6">
+                                <label for="shows_file">Выберите датасет.</label>
+                                <input type="file" id="shows_file" name="shows_file"
+                                       accept=".csv">
+                            </div>
+                            <p></p>
+                        <li>
+                        <li>
+                            <div>
+                                <button class="w-100 btn btn-lg btn-outline-primary">Подтвердить</button>
+                            </div>
+                        </li>
+
+                    </form>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card mb-4 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+                <h4 class="my-0 fw-normal">Датасет для сериалов и тв шоу</h4>
+            </div>
+            <div class="card-body">
+                <h4 class="card-title pricing-card-title">На данный момент используется датасет:
+                    <b>{{ dataset_episodes }}</b></h4>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <small class="fs-6"><a href="">Выбрать значение по умолчанию</a></small>
+                    <p></p>
+
+                    <form action="/api/dataset/episodes" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+                        <li>
+                            <div class="fs-6">
+                                <label for="shows_episode">Выберите датасет.</label>
+                                <input type="file" id="shows_episode" name="shows_episode"
+                                       accept=".csv">
+                            </div>
+                            <p></p>
+                        <li>
+                        <li>
+                            <div>
+                                <button class="w-100 btn btn-lg btn-outline-primary">Подтвердить</button>
+                            </div>
+                        </li>
+
+                    </form>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

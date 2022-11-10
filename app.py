@@ -1,4 +1,8 @@
+import math
+import os
+
 from bokeh.client import pull_session
+from bokeh.events import PanEnd
 from bokeh.embed import components, server_session
 from bokeh.layouts import column, row
 from bokeh.models import ColumnDataSource, Slider, CustomJS, Select, NumericInput
@@ -7,12 +11,17 @@ from bokeh.resources import INLINE
 from flask import Flask, render_template, jsonify, request
 
 from connection_data import MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB
+from constants import SHOWS_FILE, EPISODES_FILE
 from wrappers.MongoConnector import MongoConnector
 
 app = Flask(__name__)
 
 mongo = MongoConnector(MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB)
 DATA = mongo.get_shows_by_auditory(auditory=10)
+
+dataset_shows = SHOWS_FILE
+dataset_episodes = EPISODES_FILE
+n_proceses = 1
 
 @app.route('/dashboard/votes/imdb')
 def graphs_imdb():
@@ -182,15 +191,26 @@ def graphs_channels():
     # sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
 
     x_values = [elem["channel"] for elem in shows]
-    x_list = list(set([elem["channel"] for elem in shows]))
+    x_list = list(set(x_values))
     y_values = [x_values.count(elem) for elem in x_list]
-    sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
+    sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
+    if len(x_list) > 30:
+        val = y_values[x_list.index(sorted_x[30])]
+        x_values = []
+        for elem in shows:
+            x_v = elem["channel"]
+            if y_values[x_list.index(x_v)] > val:
+                x_values.append(x_v)
+        x_list = list(set(x_values))
+        y_values = [x_values.count(elem) for elem in x_list]
+        sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
 
     fig = figure(height=600, width=1080, tooltips=[("Канал", "@channel"), ("Число сериалов", "@serials")],
                  x_range=sorted_x)
     fig.vbar(x="x", top="top", source=source, width=0.9)
     fig.xaxis.axis_label = "Каналы"
     fig.yaxis.axis_label = "Число сериалов"
+    fig.xaxis.major_label_orientation = math.pi / 3
 
     fig.x_range.factors = sorted_x
     callback = CustomJS(args=dict(source=source, figure=fig, controls=controls), code="""
@@ -232,6 +252,7 @@ def graphs_channels():
     for single_control in controls_array:
         single_control.js_on_change('value', callback)
 
+
     inputs_column = column(*controls_array, width=480, height=500)
     layout_row = row([inputs_column, fig])
 
@@ -257,12 +278,22 @@ def dashboard():
         title_gr="Dashboard",
     ).encode(encoding='UTF-8')
 
+@app.route('/dataset')
+def dataset():
+    dataset_sh_str = f"{dataset_shows}"
+    if dataset_shows == SHOWS_FILE:
+        dataset_sh_str = "default"
 
-@app.route('/ind')
-def ind():
+    dataset_ep_str = f"{dataset_episodes}"
+    if dataset_episodes == EPISODES_FILE:
+        dataset_ep_str = "default"
     return render_template(
-        'index.html',
+        'dataset.html',
+        title="Управление датасетами",
+        dataset_shows=dataset_sh_str,
+        dataset_episodes=dataset_ep_str
     ).encode(encoding='UTF-8')
+
 
 @app.route('/')
 def home():
@@ -284,10 +315,21 @@ def api_channels():
                                            #"date_start": {"$gte": data_get["Minv"], "$lte": data_get["Maxv"]}})
     else:
         shows = mongo.get_shows(condition={"auditory": {"$gte": data_get["Reviewsv"]}, "country": data_get["Countryv"]})
+
     x_values = [elem["channel"] for elem in shows]
-    x_list = list(set([elem["channel"] for elem in shows]))
+    x_list = list(set(x_values))
     y_values = [x_values.count(elem) for elem in x_list]
-    sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
+    sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
+    if len(x_list) > 30:
+        val = y_values[x_list.index(sorted_x[30])]
+        x_values = []
+        for elem in shows:
+            x_v = elem["channel"]
+            if y_values[x_list.index(x_v)] > val:
+                x_values.append(x_v)
+        x_list = list(set(x_values))
+        y_values = [x_values.count(elem) for elem in x_list]
+        sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
 
     source = dict(
         x=x_list,
@@ -297,6 +339,60 @@ def api_channels():
         sorted_x=sorted_x
         )
     return jsonify(source)
+
+
+@app.route('/api/dataset/shows', methods=['POST'])
+def api_dataset_shows():
+    file_name = request.get_data().decode("UTF-8").split('filename="')[1].split('"')[0]
+    print(file_name)
+    global dataset_shows, dataset_episodes
+    files = os.listdir(path="./datasets/custom")
+    print(files)
+    if file_name != "" and file_name in files:
+        file_name = f"datasets/custom/{file_name}"
+
+        dataset_shows = file_name
+
+    dataset_sh_str = f"{dataset_shows}"
+    if dataset_shows == SHOWS_FILE:
+        dataset_sh_str = "default"
+
+    dataset_ep_str = f"{dataset_episodes}"
+    if dataset_episodes == EPISODES_FILE:
+        dataset_ep_str = "default"
+    return render_template(
+        'dataset.html',
+        title="Управление датасетами",
+        dataset_shows=dataset_sh_str,
+        dataset_episodes=dataset_ep_str
+    ).encode(encoding='UTF-8')
+
+
+@app.route('/api/dataset/episodes', methods=['POST'])
+def api_dataset_episodes():
+    file_name = request.get_data().decode("UTF-8").split('filename="')[1].split('"')[0]
+    print(file_name)
+    global dataset_episodes, dataset_shows
+    files = os.listdir(path="./datasets/custom")
+    print(files)
+    if file_name != "" and file_name in files:
+        file_name = f"datasets/custom/{file_name}"
+
+        dataset_episodes = file_name
+
+    dataset_sh_str = f"{dataset_shows}"
+    if dataset_shows == SHOWS_FILE:
+        dataset_sh_str = "default"
+
+    dataset_ep_str = f"{dataset_episodes}"
+    if dataset_episodes == EPISODES_FILE:
+        dataset_ep_str = "default"
+    return render_template(
+        'dataset.html',
+        title="Управление датасетами",
+        dataset_shows=dataset_sh_str,
+        dataset_episodes=dataset_ep_str
+    ).encode(encoding='UTF-8')
 
 
 if __name__ == "__main__":
