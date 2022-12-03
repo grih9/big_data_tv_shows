@@ -49,11 +49,11 @@ if __name__ == '__main__':
     #                                                           "episodes.episodes.$": {"$ne": None}},))
     # p3 = Process(target=scrap_episodes_from_db, args=(3, 80, {"country": "Россия", "auditory": {"$gte": 80},
     #                                                           "episodes.episodes.$": {"$ne": None}},))
-    p1 = Process(target=scrap_episodes_from_db, args=(1, 900, {"show_id": 1989, "auditory": {"$gte": 900},
+    p1 = Process(target=scrap_episodes_from_db, args=(1, 500, {"auditory": {"$gte": 500},
                                                                "episodes.episodes.rating_count": 0},))
-    p2 = Process(target=scrap_episodes_from_db, args=(2, 900, {"show_id": 1989, "auditory": {"$gte": 900},
+    p2 = Process(target=scrap_episodes_from_db, args=(2, 500, {"auditory": {"$gte": 500},
                                                                "episodes.episodes.rating_count": 0},))
-    p3 = Process(target=scrap_episodes_from_db, args=(3, 900, {"show_id": 1989, "auditory": {"$gte": 900},
+    p3 = Process(target=scrap_episodes_from_db, args=(3, 500, {"auditory": {"$gte": 500},
                                                                "episodes.episodes.rating_count": 0},))
     p1.start()
     p2.start()

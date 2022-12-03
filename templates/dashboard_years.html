@@ -17,7 +17,7 @@
 
 {% block ul_elements %}
 <li class="nav-item">
-    <a class="nav-link active" href="{{ url_for('graphs_kinopoisk') }}" onclick="loading();">
+    <a class="nav-link" href="{{ url_for('graphs_kinopoisk') }}" onclick="loading();">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              class="feather feather-home">
@@ -51,7 +51,7 @@
     </a>
 </li>
 <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('graphs_years') }}">
+    <a class="nav-link active" href="{{ url_for('graphs_years') }}" onclick="loading();">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              class="feather feather-users">
@@ -89,19 +89,6 @@
 </li>
 {% endblock %}
 
-
-{% block header_buttons %}
-<div class="dropdown btn-toolbar mb-2 mb-md-0">
-    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        {{graph_data}}
-    </button>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <a class="dropdown-item" href="{{ url_for('graphs_kinopoisk') }}">Кинопоиск</a>
-        <a class="dropdown-item" href="{{ url_for('graphs_imdb') }}">IMDB</a>
-    </div>
-</div>
-{% endblock %}
 {% block content_data %}
 <div style="display: flex; justify-content: center;">
     {{ plot_div|safe }}

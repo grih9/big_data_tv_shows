@@ -5,7 +5,7 @@ from bokeh.client import pull_session
 from bokeh.events import PanEnd
 from bokeh.embed import components, server_session
 from bokeh.layouts import column, row
-from bokeh.models import ColumnDataSource, Slider, CustomJS, Select, NumericInput
+from bokeh.models import ColumnDataSource, Slider, CustomJS, Select, NumericInput, TextAreaInput
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
 from flask import Flask, render_template, jsonify, request
@@ -23,6 +23,7 @@ dataset_shows = SHOWS_FILE
 dataset_episodes = EPISODES_FILE
 n_proceses = 1
 
+
 @app.route('/dashboard/votes/imdb')
 def graphs_imdb():
     source_imdb = ColumnDataSource()
@@ -31,7 +32,14 @@ def graphs_imdb():
                   'Adventure', 'History', 'Fantasy', 'Documentary', 'Horror', 'Mystery', 'Family', 'Animation',
                   'Biography', 'Sport', 'Western', 'Short', 'Musical']
     controls = {
-        "reviews": Slider(title="Минимальное число зрителей", value=10, start=10, end=100000, step=50, width=470)
+        "reviews": Slider(title="Минимальное число зрителей", value=10, start=10, end=100000, step=50, width=470),
+        "info": TextAreaInput(title="Информация", value="Информация об оценках зрителей.\n\n"
+                                                        "По горизонтали оценки выбранного источника (IMDB/Кинопоиск),\n"
+                                                        "по вертикали оценки пользователей MyShows.\n"
+                                                        "Выбор источника осуществляется с помощью выпадающего меню в правом верхнем углу.\n"
+                                                        "С помошью ползунка определяется минимальное число зрителей, которые смотрят сериал "
+                                                        "(по данным MyShows), для которых будет отмечена информация на графике",
+                              width=470, rows=10, disabled=True)
     }
 
     controls_array = controls.values()
@@ -105,7 +113,14 @@ def graphs_kinopoisk():
                   'Adventure', 'History', 'Fantasy', 'Documentary', 'Horror', 'Mystery', 'Family', 'Animation',
                   'Biography', 'Sport', 'Western', 'Short', 'Musical']
     controls = {
-        "reviews": Slider(title="Минимальное число зрителей", value=10, start=10, end=100000, step=50, width=480)
+        "reviews": Slider(title="Минимальное число зрителей", value=10, start=10, end=100000, step=50, width=480),
+        "info": TextAreaInput(title="Информация", value="Информация об оценках зрителей.\n\n"
+                                                        "По горизонтали оценки выбранного источника (IMDB/Кинопоиск),\n"
+                                                        "по вертикали оценки пользователей MyShows.\n"
+                                                        "Выбор источника осуществляется с помощью выпадающего меню в правом верхнем углу.\n"
+                                                        "С помошью ползунка определяется минимальное число зрителей, которые смотрят сериал "
+                                                        "(по данным MyShows), для которых будет отмечена информация на графике",
+                              width=470, rows=10, disabled=True)
     }
 
     controls_array = controls.values()
@@ -171,6 +186,7 @@ def graphs_kinopoisk():
 @app.route('/dashboard/channels')
 def graphs_channels():
     source = ColumnDataSource()
+    source2 = ColumnDataSource()
 
     country_list = ["Все", 'Россия', 'США', 'Великобритания', 'Германия', 'Япония', 'Китай', 'Южная Корея', 'Бразилия',
                     'Испания', 'Украина', 'Канада', 'Беларусь', "Австралия", "Франция", "Таиланд", "Турция", "Италия", "СССР"]
@@ -180,6 +196,11 @@ def graphs_channels():
         "min_year": Slider(title="Начальная дата", start=1970, end=2023, value=1970, step=1),
         "max_year": Slider(title="Конечная дата", start=1970, end=2023, value=2023, step=1),
         "country": Select(title="Страна", value="Все", options=country_list),
+        "info": TextAreaInput(title="Информация", value="Информация о каналах, на которых транслировались шоу или сериалы.\n\n"
+                                                        "По горизонтали отображаются каналы/студии,\n"
+                                                        "по вертикали число сериалов/шоу данного канала.\n"
+                                                        "С помошью полей управления можно производить фильтрацию данных.\n",
+                              width=470, rows=10, disabled=True)
     }
 
     controls_array = controls.values()
@@ -192,30 +213,49 @@ def graphs_channels():
 
     x_values = [elem["channel"] for elem in shows]
     x_list = list(set(x_values))
+    x_list2 = list(set(x_values))
     y_values = [x_values.count(elem) for elem in x_list]
+    y_values2 = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list2]
     sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
+    sorted_x2 = list(sorted(x_list, key=lambda x: y_values2[x_list2.index(x)]))[::-1]
     if len(x_list) > 30:
         val = y_values[x_list.index(sorted_x[30])]
+        val2 = y_values2[x_list.index(sorted_x2[30])]
         x_values = []
+        x_values2 = []
         for elem in shows:
             x_v = elem["channel"]
+            #if y_values[x_list.index(x_v)] > val:
             if y_values[x_list.index(x_v)] > val:
                 x_values.append(x_v)
+            if y_values2[x_list.index(x_v)] > val2:
+                x_values2.append(x_v)
         x_list = list(set(x_values))
+        x_list2 = list(set(x_values2))
         y_values = [x_values.count(elem) for elem in x_list]
+        y_values2 = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list2]
         sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
+        sorted_x2 = list(sorted(x_list2, key=lambda x: y_values2[x_list2.index(x)]))[::-1]
 
-    fig = figure(height=600, width=1080, tooltips=[("Канал", "@channel"), ("Число сериалов", "@serials")],
+    fig = figure(height=500, width=1080, tooltips=[("Канал", "@channel"), ("Число сериалов", "@serials")],
                  x_range=sorted_x)
     fig.vbar(x="x", top="top", source=source, width=0.9)
     fig.xaxis.axis_label = "Каналы"
     fig.yaxis.axis_label = "Число сериалов"
     fig.xaxis.major_label_orientation = math.pi / 3
 
+    fig2 = figure(height=500, width=1080, tooltips=[("Канал", "@channel"), ("Число зрителей", "@auditory")],
+                  x_range=sorted_x2)
+    fig2.vbar(x="x", top="top", source=source2, width=0.9)
+    fig2.xaxis.axis_label = "Каналы"
+    fig2.yaxis.axis_label = "Число зрителей"
+    fig2.xaxis.major_label_orientation = math.pi / 3
+
     fig.x_range.factors = sorted_x
+    fig2.x_range.factors = sorted_x2
     callback = CustomJS(args=dict(source=source, figure=fig, controls=controls), code="""
             var xml = new XMLHttpRequest();
-            xml.open("POST", "http://127.0.0.1:5000/api/channels", true);
+            xml.open("POST", "http://127.0.0.1:5000/api/channels/1", true);
             xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xml.onload = function() {
                 reload = "not";
@@ -241,6 +281,34 @@ def graphs_channels():
             loading();
         """)
 
+    callback2 = CustomJS(args=dict(source=source, figure=fig, controls=controls), code="""
+                var xml = new XMLHttpRequest();
+                xml.open("POST", "http://127.0.0.1:5000/api/channels/2", true);
+                xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xml.onload = function() {
+                    reload = "not";
+                    $("#loading").hide();
+                    $("#content").show();
+                    var dataReply = JSON.parse(this.responseText)
+                    console.log(dataReply);
+                    source.data = dataReply;
+                    figure.x_range.factors = dataReply.sorted_x;
+                    figure.change.emit();
+                    source.change.emit();
+                }
+
+                var dataval = {Minv: controls.min_year.value, 
+                Maxv: controls.max_year.value,
+                Reviewsv: controls.reviews.value,
+                Countryv: controls.country.value};
+
+                var dataSend = JSON.stringify(dataval);
+
+                xml.send(dataSend);
+                reload = "reload";
+                loading();
+            """)
+
     source.data = dict(
         x=x_list,
         top=y_values,
@@ -249,12 +317,22 @@ def graphs_channels():
         sorted_x=sorted_x
     )
 
+    source2.data = dict(
+        x=x_list2,
+        top=y_values2,
+        channel=x_list2,
+        auditory=y_values2,
+        sorted_x=sorted_x2
+    )
+
     for single_control in controls_array:
-        single_control.js_on_change('value', callback)
+        #single_control.js_on_change('value', callback)
+        single_control.js_on_change('value', callback2)
 
 
     inputs_column = column(*controls_array, width=480, height=500)
-    layout_row = row([inputs_column, fig])
+    data_column = column([fig, fig2])
+    layout_row = row([inputs_column, data_column])
 
     script, div = components(layout_row)
     return render_template(
@@ -267,6 +345,171 @@ def graphs_channels():
     ).encode(encoding='UTF-8')
 
 
+@app.route('/dashboard/years')
+def graphs_years():
+    source = ColumnDataSource()
+    source2 = ColumnDataSource()
+
+    country_list = ["Все", 'Россия', 'США', 'Великобритания', 'Германия', 'Япония', 'Китай', 'Южная Корея', 'Бразилия',
+                    'Испания', 'Украина', 'Канада', 'Беларусь', "Австралия", "Франция", "Таиланд", "Турция", "Италия",
+                    "СССР"]
+    country_list.sort()
+    controls = {
+        "reviews": NumericInput(title="Милимальное число зрителей", value=10, placeholder="Введите значение", low=10,
+                                high=100000, mode="int"),
+        "min_year": Slider(title="Начальная дата", start=1970, end=2023, value=1970, step=1),
+        "max_year": Slider(title="Конечная дата", start=1970, end=2023, value=2023, step=1),
+        "country": Select(title="Страна", value="Все", options=country_list),
+        "info": TextAreaInput(title="Информация",
+                              value="Информация о каналах, на которых транслировались шоу или сериалы.\n\n"
+                                    "По горизонтали отображаются каналы/студии,\n"
+                                    "по вертикали число сериалов/шоу данного канала.\n"
+                                    "С помошью полей управления можно производить фильтрацию данных.\n",
+                              width=470, rows=10, disabled=True)
+    }
+
+    controls_array = controls.values()
+
+    shows = DATA
+    # x_values = [",".join(elem["country"]) for elem in shows]
+    # x_list = list(set([",".join(elem["country"]) for elem in shows]))
+    # y_values = [x_values.count(elem) for elem in x_list]
+    # sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
+
+    x_values = [elem["channel"] for elem in shows]
+    x_list = list(set(x_values))
+    x_list2 = list(set(x_values))
+    y_values = [x_values.count(elem) for elem in x_list]
+    y_values2 = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list2]
+    sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
+    sorted_x2 = list(sorted(x_list, key=lambda x: y_values2[x_list2.index(x)]))[::-1]
+    if len(x_list) > 30:
+        val = y_values[x_list.index(sorted_x[30])]
+        val2 = y_values2[x_list.index(sorted_x2[30])]
+        x_values = []
+        x_values2 = []
+        for elem in shows:
+            x_v = elem["channel"]
+            # if y_values[x_list.index(x_v)] > val:
+            if y_values[x_list.index(x_v)] > val:
+                x_values.append(x_v)
+            if y_values2[x_list.index(x_v)] > val2:
+                x_values2.append(x_v)
+        x_list = list(set(x_values))
+        x_list2 = list(set(x_values2))
+        y_values = [x_values.count(elem) for elem in x_list]
+        y_values2 = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list2]
+        sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
+        sorted_x2 = list(sorted(x_list2, key=lambda x: y_values2[x_list2.index(x)]))[::-1]
+
+    fig = figure(height=600, width=1080, tooltips=[("Канал", "@channel"), ("Число сериалов", "@serials")],
+                 x_range=sorted_x)
+    fig.vbar(x="x", top="top", source=source, width=0.9)
+    fig.xaxis.axis_label = "Каналы"
+    fig.yaxis.axis_label = "Число сериалов"
+    fig.xaxis.major_label_orientation = math.pi / 3
+
+    fig2 = figure(height=600, width=1080, tooltips=[("Канал", "@channel"), ("Число зрителей", "@auditory")],
+                  x_range=sorted_x2)
+    fig2.vbar(x="x", top="top", source=source2, width=0.9)
+    fig2.xaxis.axis_label = "Каналы"
+    fig2.yaxis.axis_label = "Число зрителей"
+    fig2.xaxis.major_label_orientation = math.pi / 3
+
+    fig.x_range.factors = sorted_x
+    fig2.x_range.factors = sorted_x2
+    callback = CustomJS(args=dict(source=source, figure=fig, controls=controls), code="""
+            var xml = new XMLHttpRequest();
+            xml.open("POST", "http://127.0.0.1:5000/api/channels/1", true);
+            xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xml.onload = function() {
+                reload = "not";
+                $("#loading").hide();
+                $("#content").show();
+                var dataReply = JSON.parse(this.responseText)
+                console.log(dataReply);
+                source.data = dataReply;
+                figure.x_range.factors = dataReply.sorted_x;
+                figure.change.emit();
+                source.change.emit();
+            }
+
+            var dataval = {Minv: controls.min_year.value, 
+            Maxv: controls.max_year.value,
+            Reviewsv: controls.reviews.value,
+            Countryv: controls.country.value};
+
+            var dataSend = JSON.stringify(dataval);
+
+            xml.send(dataSend);
+            reload = "reload";
+            loading();
+        """)
+
+    callback2 = CustomJS(args=dict(source=source2, figure=fig2, controls=controls), code="""
+                var xml = new XMLHttpRequest();
+                xml.open("POST", "http://127.0.0.1:5000/api/channels/2", true);
+                xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xml.onload = function() {
+                    reload = "not";
+                    $("#loading").hide();
+                    $("#content").show();
+                    var dataReply = JSON.parse(this.responseText)
+                    console.log(dataReply);
+                    source.data = dataReply;
+                    figure.x_range.factors = dataReply.sorted_x;
+                    figure.change.emit();
+                    source.change.emit();
+                }
+
+                var dataval = {Minv: controls.min_year.value, 
+                Maxv: controls.max_year.value,
+                Reviewsv: controls.reviews.value,
+                Countryv: controls.country.value};
+
+                var dataSend = JSON.stringify(dataval);
+
+                xml.send(dataSend);
+                reload = "reload";
+                loading();
+            """)
+
+    source.data = dict(
+        x=x_list,
+        top=y_values,
+        channel=x_list,
+        serials=y_values,
+        sorted_x=sorted_x
+    )
+
+    source2.data = dict(
+        x=x_list2,
+        top=y_values2,
+        channel=x_list2,
+        auditory=y_values2,
+        sorted_x=sorted_x2
+    )
+
+    for single_control in controls_array:
+        #single_control.js_on_change('value', callback)
+        single_control.js_on_change('value', callback2)
+
+    inputs_column = column(*controls_array, width=480, height=500)
+    data_column = column([fig, fig2])
+    layout_row = row([inputs_column, data_column])
+
+    script, div = components(layout_row)
+    return render_template(
+        'dashboard_years.html',
+        plot_script=script,
+        plot_div=div,
+        js_resources=INLINE.render_js(),
+        css_resources=INLINE.render_css(),
+        title_gr="Аналитика каналов"
+    ).encode(encoding='UTF-8')
+
+
+
 @app.route('/dashboard')
 def dashboard():
     return render_template(
@@ -277,6 +520,8 @@ def dashboard():
         css_resources=INLINE.render_css(),
         title_gr="Dashboard",
     ).encode(encoding='UTF-8')
+
+
 
 @app.route('/dataset')
 def dataset():
@@ -305,8 +550,8 @@ def home():
     # show(fig_kinopoisk)
 
 
-@app.route('/api/channels', methods=['POST'])
-def api_channels():
+@app.route('/api/channels/1', methods=['POST'])
+def api_channels_1():
     data_get = request.get_json(force=True)
 
     print(data_get)
@@ -337,6 +582,42 @@ def api_channels():
         channel=x_list,
         serials=y_values,
         sorted_x=sorted_x
+        )
+    return jsonify(source)
+
+@app.route('/api/channels/2', methods=['POST'])
+def api_channels_2():
+    data_get = request.get_json(force=True)
+
+    print(data_get)
+    if data_get["Countryv"] == "Все":
+        shows = mongo.get_shows(condition={"auditory": {"$gte": data_get["Reviewsv"]}})
+                                           #"date_start": {"$gte": data_get["Minv"], "$lte": data_get["Maxv"]}})
+    else:
+        shows = mongo.get_shows(condition={"auditory": {"$gte": data_get["Reviewsv"]}, "country": data_get["Countryv"]})
+
+    x_values = [elem["channel"] for elem in shows]
+    x_list = list(set(x_values))
+    x_list2 = list(set(x_values))
+    y_values2 = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list]
+    sorted_x2 = list(sorted(x_list, key=lambda x: y_values2[x_list.index(x)]))[::-1]
+    if len(x_list) > 30:
+        val2 = y_values2[x_list.index(sorted_x2[30])]
+        x_values2 = []
+        for elem in shows:
+            x_v = elem["channel"]
+            if y_values2[x_list.index(x_v)] > val2:
+                x_values2.append(x_v)
+        x_list2 = list(set(x_values2))
+        y_values2 = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list2]
+        sorted_x2 = list(sorted(x_list2, key=lambda x: y_values2[x_list2.index(x)]))[::-1]
+
+    source = dict(
+        x=x_list2,
+        top=y_values2,
+        channel=x_list2,
+        auditory=y_values2,
+        sorted_x=sorted_x2
         )
     return jsonify(source)
 
