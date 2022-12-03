@@ -189,17 +189,20 @@ def graphs_channels():
     source2 = ColumnDataSource()
 
     country_list = ["Все", 'Россия', 'США', 'Великобритания', 'Германия', 'Япония', 'Китай', 'Южная Корея', 'Бразилия',
-                    'Испания', 'Украина', 'Канада', 'Беларусь', "Австралия", "Франция", "Таиланд", "Турция", "Италия", "СССР"]
+                    'Испания', 'Украина', 'Канада', 'Беларусь', "Австралия", "Франция", "Таиланд", "Турция", "Италия",
+                    "СССР"]
     country_list.sort()
     controls = {
-        "reviews": NumericInput(title="Милимальное число зрителей", value=10, placeholder="Введите значение", low=10, high=100000, mode="int"),
+        "reviews": NumericInput(title="Милимальное число зрителей", value=10, placeholder="Введите значение", low=10,
+                                high=100000, mode="int"),
         "min_year": Slider(title="Начальная дата", start=1970, end=2023, value=1970, step=1),
         "max_year": Slider(title="Конечная дата", start=1970, end=2023, value=2023, step=1),
         "country": Select(title="Страна", value="Все", options=country_list),
-        "info": TextAreaInput(title="Информация", value="Информация о каналах, на которых транслировались шоу или сериалы.\n\n"
-                                                        "По горизонтали отображаются каналы/студии,\n"
-                                                        "по вертикали число сериалов/шоу данного канала.\n"
-                                                        "С помошью полей управления можно производить фильтрацию данных.\n",
+        "info": TextAreaInput(title="Информация",
+                              value="Информация о каналах, на которых транслировались шоу или сериалы.\n\n"
+                                    "По горизонтали отображаются каналы/студии,\n"
+                                    "по вертикали число сериалов/шоу данного канала.\n"
+                                    "С помошью полей управления можно производить фильтрацию данных.\n",
                               width=470, rows=10, disabled=True)
     }
 
@@ -225,7 +228,6 @@ def graphs_channels():
         x_values2 = []
         for elem in shows:
             x_v = elem["channel"]
-            #if y_values[x_list.index(x_v)] > val:
             if y_values[x_list.index(x_v)] > val:
                 x_values.append(x_v)
             if y_values2[x_list.index(x_v)] > val2:
@@ -237,14 +239,14 @@ def graphs_channels():
         sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
         sorted_x2 = list(sorted(x_list2, key=lambda x: y_values2[x_list2.index(x)]))[::-1]
 
-    fig = figure(height=500, width=1080, tooltips=[("Канал", "@channel"), ("Число сериалов", "@serials")],
+    fig = figure(height=400, width=1080, tooltips=[("Канал", "@channel"), ("Число сериалов", "@serials")],
                  x_range=sorted_x)
     fig.vbar(x="x", top="top", source=source, width=0.9)
     fig.xaxis.axis_label = "Каналы"
     fig.yaxis.axis_label = "Число сериалов"
     fig.xaxis.major_label_orientation = math.pi / 3
 
-    fig2 = figure(height=500, width=1080, tooltips=[("Канал", "@channel"), ("Число зрителей", "@auditory")],
+    fig2 = figure(height=400, width=1080, tooltips=[("Канал", "@channel"), ("Число зрителей", "@auditory")],
                   x_range=sorted_x2)
     fig2.vbar(x="x", top="top", source=source2, width=0.9)
     fig2.xaxis.axis_label = "Каналы"
@@ -253,39 +255,18 @@ def graphs_channels():
 
     fig.x_range.factors = sorted_x
     fig2.x_range.factors = sorted_x2
-    callback = CustomJS(args=dict(source=source, figure=fig, controls=controls), code="""
-            var xml = new XMLHttpRequest();
-            xml.open("POST", "http://127.0.0.1:5000/api/channels/1", true);
-            xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xml.onload = function() {
-                reload = "not";
-                $("#loading").hide();
-                $("#content").show();
-                var dataReply = JSON.parse(this.responseText)
-                console.log(dataReply);
-                source.data = dataReply;
-                figure.x_range.factors = dataReply.sorted_x;
-                figure.change.emit();
-                source.change.emit();
-            }
-            
-            var dataval = {Minv: controls.min_year.value, 
-            Maxv: controls.max_year.value,
-            Reviewsv: controls.reviews.value,
-            Countryv: controls.country.value};
-            
-            var dataSend = JSON.stringify(dataval);
-            
-            xml.send(dataSend);
-            reload = "reload";
-            loading();
-        """)
-
-    callback2 = CustomJS(args=dict(source=source, figure=fig, controls=controls), code="""
+    callback = CustomJS(args=dict(source=source, figure=fig, source2=source2, figure2=fig2, controls=controls), code="""
+                var counter = 0;
                 var xml = new XMLHttpRequest();
-                xml.open("POST", "http://127.0.0.1:5000/api/channels/2", true);
+                xml.open("POST", "http://127.0.0.1:5000/api/channels/1", true);
                 xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xml.onload = function() {
+                    counter = counter - 1;
+                    if (counter == 0) {
+                        reload = "not";
+                        $("#loading").hide();
+                        $("#content").show();
+                    }
                     reload = "not";
                     $("#loading").hide();
                     $("#content").show();
@@ -296,6 +277,35 @@ def graphs_channels():
                     figure.change.emit();
                     source.change.emit();
                 }
+                
+                var xml2 = new XMLHttpRequest();
+                xml2.open("POST", "http://127.0.0.1:5000/api/channels/2", true);
+                xml2.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xml2.onload = function() {
+                    counter = counter - 1;
+                    if (counter == 0) {
+                        reload = "not";
+                        $("#loading").hide();
+                        $("#content").show();
+                    }
+                    var dataReply2 = JSON.parse(this.responseText)
+                    console.log(dataReply2);
+                    source2.data = dataReply2;
+                    figure2.x_range.factors = dataReply2.sorted_x;
+                    figure2.change.emit();
+                    source2.change.emit();
+                }
+
+                var dataval2 = {Minv: controls.min_year.value, 
+                Maxv: controls.max_year.value,
+                Reviewsv: controls.reviews.value,
+                Countryv: controls.country.value};
+
+                var dataSend2 = JSON.stringify(dataval2);
+                counter = counter + 1;
+                xml2.send(dataSend2);
+                reload = "reload";
+                loading();    
 
                 var dataval = {Minv: controls.min_year.value, 
                 Maxv: controls.max_year.value,
@@ -303,7 +313,7 @@ def graphs_channels():
                 Countryv: controls.country.value};
 
                 var dataSend = JSON.stringify(dataval);
-
+                counter = counter + 1;
                 xml.send(dataSend);
                 reload = "reload";
                 loading();
@@ -326,9 +336,7 @@ def graphs_channels():
     )
 
     for single_control in controls_array:
-        #single_control.js_on_change('value', callback)
-        single_control.js_on_change('value', callback2)
-
+        single_control.js_on_change('value', callback)
 
     inputs_column = column(*controls_array, width=480, height=500)
     data_column = column([fig, fig2])
@@ -390,7 +398,6 @@ def graphs_years():
         x_values2 = []
         for elem in shows:
             x_v = elem["channel"]
-            # if y_values[x_list.index(x_v)] > val:
             if y_values[x_list.index(x_v)] > val:
                 x_values.append(x_v)
             if y_values2[x_list.index(x_v)] > val2:
