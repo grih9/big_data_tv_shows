@@ -72,6 +72,12 @@ class MongoConnector:
     def get_shows_by_channel(self, channel, sort=None):
         return self.get_shows(condition={"channel": channel}, sort=sort)
 
+    def get_shows_by_start_date(self, year, sort=None):
+        return self.get_shows(condition={"date_start": {"$regex": str(year)}}, sort=sort)
+
+    def get_shows_by_end_date(self, year, sort=None):
+        return self.get_shows(condition={"date_end": {"$regex": str(year)}}, sort=sort)
+
     def update_episodes(self, episode_id, show_title, episode_title, season, episode, auditory, auditory_rate,
                         rating_myshows, rating_count, episode_length, date, number_of_comments, show_id=0):
 

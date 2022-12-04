@@ -90,8 +90,17 @@
 {% endblock %}
 
 {% block content_data %}
-<div style="display: flex; justify-content: center;">
+<div>
     {{ plot_div|safe }}
-    <p>С помощью панели справа можно выбрать тип графиков</p>
+    <p class="fs-3">С помощью панели справа можно выбрать тип графиков для просмотра и анализа:</p>
+    <p class="fl-3">
+    <ul>
+        <li class="fs-5"><a class="nav-link" href="{{ url_for('graphs_kinopoisk') }}">Сравнительный график оценок</a></li>
+        <li class="fs-5"><a class="nav-link" href="{{ url_for('graphs_channels') }}">Столбчатая диаграмма анализа каналов по числу сериалов и зрителям</a></li>
+        <li class="fs-5"><a class="nav-link" href="{{ url_for('graphs_kinopoisk') }}">Столбчатая диаграмма анализа каналов по числу сериалов и зрителям</a></li>
+        <li class="fs-5"><a class="nav-link" href="{{ url_for('graphs_years') }}">График для анализа по годам</a></li>
+    </ul>
+    </p>
+
 </div>
 {% endblock %}
