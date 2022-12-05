@@ -5,7 +5,7 @@ from bokeh.client import pull_session
 from bokeh.events import PanEnd
 from bokeh.embed import components, server_session
 from bokeh.layouts import column, row
-from bokeh.models import ColumnDataSource, Slider, CustomJS, Select, NumericInput, TextAreaInput
+from bokeh.models import ColumnDataSource, Slider, CustomJS, Select, NumericInput, TextAreaInput, Spinner
 from bokeh.plotting import figure
 from bokeh.resources import INLINE
 from flask import Flask, render_template, jsonify, request
@@ -188,14 +188,13 @@ def graphs_channels():
     source3 = ColumnDataSource()
 
     country_list = ["Все", 'Россия', 'США', 'Великобритания', 'Германия', 'Япония', 'Китай', 'Южная Корея', 'Бразилия',
-                    'Испания', 'Украина', 'Канада', 'Беларусь', "Австралия", "Франция", "Таиланд", "Турция", "Италия",
-                    "СССР"]
+                    'Испания', 'Украина', 'Канада', "Австралия", "Франция", "Таиланд", "Турция", "Италия", "СССР"]
     country_list.sort()
     controls = {
         "reviews": NumericInput(title="Милимальное число зрителей", value=10, placeholder="Введите значение", low=10,
                                 high=100000, mode="int"),
-        "min_year": Slider(title="Начальная дата", start=1970, end=2023, value=1970, step=1),
-        "max_year": Slider(title="Конечная дата", start=1970, end=2023, value=2023, step=1),
+        "min_year": Spinner(title="Начальная дата", low=1970, high=2023, value=1970, step=1),
+        "max_year": Spinner(title="Конечная дата", low=1970, high=2023, value=2023, step=1),
         "country": Select(title="Страна", value="Все", options=country_list),
         "info": TextAreaInput(title="Информация",
                               value="Информация о сериалах и шоу по годам.\n\n"
@@ -209,31 +208,24 @@ def graphs_channels():
     controls_array = controls.values()
 
     shows = DATA
-    # x_values = [",".join(elem["country"]) for elem in shows]
-    # x_list = list(set([",".join(elem["country"]) for elem in shows]))
-    # y_values = [x_values.count(elem) for elem in x_list]
-    # sorted_x = sorted(x_list, key=lambda x: y_values[x_list.index(x)])
 
     x_values = [elem["channel"] for elem in shows]
 
     x_list = list(set(x_values))
-    x_list2 = list(set(x_values))
-    x_list3 = list(set(x_values))
+    x_list2 = x_list
+    x_list3 = x_list
 
     y_values = [x_values.count(elem) for elem in x_list]
-    y_values2ch = [x_values.count(elem) for elem in x_list2]
-    y_values3ch = [x_values.count(elem) for elem in x_list3]
+    y_values2ch = y_values
+    y_values3ch = y_values
     y_values2 = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list2]
     y_values3 = [int(y_values2[i] / y_values2ch[i]) if y_values[i] != 0 else 0 for i in range(len(y_values))]
-    y_values2av = [int(y_values2[i] / y_values2ch[i]) if y_values[i] != 0 else 0 for i in range(len(y_values))]
-    y_values3aud = [sum([show["auditory"] if show["channel"] == elem else 0 for show in shows]) for elem in x_list3]
+    y_values2av = y_values3
+    y_values3aud = y_values2
 
     sorted_x = list(sorted(x_list, key=lambda x: y_values[x_list.index(x)]))[::-1]
     sorted_x2 = list(sorted(x_list2, key=lambda x: y_values2[x_list2.index(x)]))[::-1]
     sorted_x3 = list(sorted(x_list3, key=lambda x: y_values3[x_list2.index(x)]))[::-1]
-
-    print(y_values3)
-    print(sorted_x3)
 
     if len(x_list) > 30:
         val = y_values[x_list.index(sorted_x[30])]
@@ -312,6 +304,9 @@ def graphs_channels():
                         reload = "not";
                         $("#loading").hide();
                         $("#content").show();
+                    } else {
+                        reload = "reload";
+                        loading();    
                     }
                     var dataReply = JSON.parse(this.responseText)
                     console.log(dataReply);
@@ -332,6 +327,9 @@ def graphs_channels():
                         reload = "not";
                         $("#loading").hide();
                         $("#content").show();
+                    } else {
+                        reload = "reload";
+                        loading();    
                     }
                     var dataReply2 = JSON.parse(this.responseText)
                     console.log(dataReply2);
@@ -352,6 +350,9 @@ def graphs_channels():
                         reload = "not";
                         $("#loading").hide();
                         $("#content").show();
+                    } else {
+                        reload = "reload";
+                        loading();    
                     }
                     var dataReply3 = JSON.parse(this.responseText)
                     console.log(dataReply3);
@@ -395,7 +396,9 @@ def graphs_channels():
                 console.log(counter);
                 xml3.send(dataSend3);
                 reload = "reload";
-                loading();   
+                loading();
+                controls.max_year.low = controls.min_year.value;
+                controls.min_year.high = controls.max_year.value;   
             """)
 
     source.data = dict(
@@ -458,8 +461,8 @@ def graphs_years():
     controls = {
         "reviews": NumericInput(title="Милимальное число зрителей", value=10, placeholder="Введите значение", low=10,
                                 high=100000, mode="int"),
-        "min_year": Slider(title="Начальная дата", start=1970, end=2022, value=1970, step=1),
-        "max_year": Slider(title="Конечная дата", start=1970, end=2022, value=2022, step=1),
+        "min_year": Spinner(title="Начальная дата", low=1970, high=2022, value=1970, step=1),
+        "max_year": Spinner(title="Конечная дата", low=1970, high=2022, value=2022, step=1),
         "country": Select(title="Страна", value="Все", options=country_list),
         "info": TextAreaInput(title="Информация",
                               value="Информация о каналах, на которых транслировались шоу или сериалы.\n\n"
@@ -471,21 +474,22 @@ def graphs_years():
 
     controls_array = controls.values()
 
-    years = [year for year in range(1970, 2023)]
+    years = [year for year in range(controls["min_year"].value, controls["max_year"].value + 1)]
 
     data = [mongo.get_shows(condition={"auditory": {"$gte": 10}, "date_start": {"$regex": str(year)}}) for year in years]
-    print(000)
+
     y_values_start = [len(show) for show in data]
     y_values_end = [len(mongo.get_shows(condition={"auditory": {"$gte": 10},
                                                    "date_end": {"$regex": str(year)}}))
                     for year in years]
-    print(123)
+
     y = [sum([show["auditory"] for show in data[i]]) for i in range(len(years))]
-    print(456)
-    rating = [sum([show["rating_myshows"] for show in data[i]]) / y_values_start[i] if y_values_start[i] != 0 else None for i in range(len(years))]
-    print(789)
+
+    rating = [sum([show["rating_myshows"] for show in data[i]]) / y_values_start[i] if y_values_start[i] != 0 else None
+              for i in range(len(years))]
+
     fig = figure(height=400, width=620, tooltips=[("Год", "@years"), ("Начато сериалов", "@start"),
-                                                   ("Окончено сериалов", "@end")])
+                                                  ("Окончено сериалов", "@end")])
     fig.circle(x="x", y="y_start", source=source, size=4, color="green")
     fig.circle(x="x", y="y_end", source=source, size=4, color="red")
     fig.line(x="x", y="y_start", source=source, color="green")
@@ -523,6 +527,10 @@ def graphs_years():
                         $("#loading").hide();
                         $("#content").show();
                     }
+                    else {
+                        reload = "reload";
+                        loading();    
+                    }
                     var dataReply = JSON.parse(this.responseText)
                     console.log(dataReply);
                     source.data = dataReply;
@@ -542,6 +550,10 @@ def graphs_years():
                         $("#loading").hide();
                         $("#content").show();
                     }
+                    else {
+                        reload = "reload";
+                        loading();    
+                    }
                     var dataReply2 = JSON.parse(this.responseText)
                     console.log(dataReply2);
                     source2.data = dataReply2;
@@ -560,6 +572,10 @@ def graphs_years():
                         reload = "not";
                         $("#loading").hide();
                         $("#content").show();
+                    }
+                    else {
+                        reload = "reload";
+                        loading();    
                     }
                     var dataReply3 = JSON.parse(this.responseText)
                     console.log(dataReply3);
@@ -603,6 +619,8 @@ def graphs_years():
                 xml3.send(dataSend3);
                 reload = "reload";
                 loading();
+                controls.max_year.low = controls.min_year.value;
+                controls.min_year.high = controls.max_year.value; 
         """)
 
     source.data = dict(
@@ -716,6 +734,7 @@ def api_years_2():
 @app.route('/api/years/3', methods=['POST'])
 def api_years_3():
     return main_api_years_3(mongo)
+
 
 @app.route('/api/dataset/shows', methods=['POST'])
 def api_dataset_shows():
