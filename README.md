@@ -5,7 +5,7 @@
 * docker run -p 5000:5000 flask-app
 
 * docker-compose up -d
-* docker pull selenoid/vnc:chrome:100.0
+* docker pull selenoid/vnc_chrome:100.0
 
 Доступ через браузер - http://127.0.0.1:5000/
 
