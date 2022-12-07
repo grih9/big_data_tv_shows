@@ -1,4 +1,4 @@
-# big_data_tv_shows
+# MyShows Analysis
 База (только графики):
 * docker pull grih9/myshows_analysis:latest
 * docker run -p 5000:5000 flask-app
