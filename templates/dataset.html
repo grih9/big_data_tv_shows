@@ -11,6 +11,10 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 {% endblock %}
 
+{% block loading_text %}
+Загрузка может занять до минуты.
+{% endblock %}
+
 
 {% block content %}
 <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
@@ -19,7 +23,8 @@
         Вы можете создать пустой файл и начать сбор данных или использовать уже готовый
         датасет.</p>
     <p class="fs-4">Внимание! Выбранный датасет будет использоваться для работы с базой данных и скраппинга
-        веб-страниц. <b>ФАЙЛ ДОЛЖЕН НАХОДИТСЯ В ДИРЕКТОРИИ datasets/custom рядом с исполняемым файлом</b></p>
+        веб-страниц. <b>ФАЙЛ ДОЛЖЕН НАХОДИТСЯ В ДИРЕКТОРИИ datasets/custom рядом с исполняемым файлом.
+            При использовании контейнера перенесите файл согласно инструкции и введите имя файла в поле ниже</b></p>
 </div>
 <div class="row row-cols-1 row-cols-md-2 mb-2 text-center">
     <div class="col">
@@ -31,14 +36,15 @@
                 <h4 class="card-title pricing-card-title">На данный момент используется датасет:
                     <b>{{ dataset_shows }}</b></h4>
                 <ul class="list-unstyled mt-3 mb-4">
-                    <small class="fs-6"><a href="">Выбрать значение по умолчанию</a></small>
+                    <small class="fs-6">Для значения по умолчанию введите <b>default</b></small>
                     <p></p>
 
                     <form action="/api/dataset/shows" method="post" enctype="multipart/form-data" accept-charset="utf-8">
                         <li>
                             <div class="fs-6">
                                 <label for="shows_file">Выберите датасет.</label>
-                                <input type="file" id="shows_file" name="shows_file"
+                                <input id="shows_file_text" name="shows_file_text">
+                                <input type="file" class="form-control" id="shows_file" name="shows_file"
                                        accept=".csv">
                             </div>
                             <p></p>
@@ -64,14 +70,15 @@
                 <h4 class="card-title pricing-card-title">На данный момент используется датасет:
                     <b>{{ dataset_episodes }}</b></h4>
                 <ul class="list-unstyled mt-3 mb-4">
-                    <small class="fs-6"><a href="">Выбрать значение по умолчанию</a></small>
+                    <small class="fs-6">Для значения по умолчанию введите <b>default</b></small>
                     <p></p>
 
                     <form action="/api/dataset/episodes" method="post" enctype="multipart/form-data" accept-charset="utf-8">
                         <li>
                             <div class="fs-6">
                                 <label for="shows_episode">Выберите датасет.</label>
-                                <input type="file" id="shows_episode" name="shows_episode"
+                                <input id="shows_episode_text" name="shows_episode_text">
+                                <input type="file" class="form-control" id="shows_episode" name="shows_episode"
                                        accept=".csv">
                             </div>
                             <p></p>

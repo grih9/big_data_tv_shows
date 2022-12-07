@@ -1,7 +1,18 @@
 SHOWS_FILE = "datasets/tvshows.csv"
 EPISODES_FILE = "datasets/episodes.csv"
 
-DRIVER_PATH = './driver/chromedriver'
+DRIVER_PATH = 'driver/chromedriver'
+#SELENOID_URL = 'http://127.0.0.1:4444/wd/hub' #SELECT FOR DEBUG WITHOUT CONTAINER
+SELENOID_URL = 'http://172.17.0.3:4444/wd/hub'
+SELENOID_CAPABILITIES = {
+    "browserName": "chrome",
+    "browserVersion": "100.0",
+    "selenoid:options": {
+        "enableVideo": False,
+        "enableVNC": True
+    }
+}
+
 BASE_URL = "https://myshows.me/view"
 
 SHOW_DATA = {"show_id": 0, "title": "", "original_title": "", "status": "", "auditory": 0, "rating_myshows": 0.0,

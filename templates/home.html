@@ -12,11 +12,18 @@
 {% endblock %}
 
 
+{% block loading_text %}
+Загрузка может занять до минуты.
+{% endblock %}
+
 {% block content %}
     <form action="{{ url_for('dataset') }}">
-    <input class="btn btn-primary mt-3 me-2" type="submit" value="Cоздание датасета"/>
+    <input class="btn btn-primary mt-3 me-2" type="submit" value="Выбор датасета"/>
     </form>
-    <form action="#">
+    <form action="{{ url_for('scrapping') }}">
+    <input class="btn btn-primary mt-3 me-2" type="submit" value="Cбор данных"/>
+    </form>
+    <form action="{{ url_for('database') }}">
     <input class="btn btn-primary mt-3 me-2" type="submit" value="Запись в базу данных"/>
     </form>
     <form action="{{ url_for('dashboard') }}">

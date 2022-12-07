@@ -1,5 +1,6 @@
 import math
 import os
+from multiprocessing import Process
 
 from bokeh.client import pull_session
 from bokeh.events import PanEnd
@@ -12,7 +13,9 @@ from flask import Flask, render_template, jsonify, request
 from API.apis import *
 
 from connection_data import MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB
-from constants import SHOWS_FILE, EPISODES_FILE
+from constants import SHOWS_FILE, EPISODES_FILE, NUMBER_OF_EPISODES, NUMBER_OF_SHOWS
+from scrapper.episodes import scrap_episodes
+from scrapper.shows import scrap_shows
 from wrappers.MongoConnector import MongoConnector
 
 app = Flask(__name__)
@@ -22,7 +25,8 @@ DATA = mongo.get_shows_by_auditory(auditory=10)
 
 dataset_shows = SHOWS_FILE
 dataset_episodes = EPISODES_FILE
-n_proceses = 1
+n_processes = 1
+is_scrapping = False
 
 
 @app.route('/dashboard/votes/imdb')
@@ -682,6 +686,7 @@ def dashboard():
 
 @app.route('/dataset')
 def dataset():
+    global dataset_episodes, dataset_shows
     dataset_sh_str = f"{dataset_shows}"
     if dataset_shows == SHOWS_FILE:
         dataset_sh_str = "default"
@@ -696,6 +701,43 @@ def dataset():
         dataset_episodes=dataset_ep_str
     ).encode(encoding='UTF-8')
 
+
+@app.route('/scrapping')
+def scrapping():
+    global dataset_episodes, dataset_shows, is_scrapping
+    dataset_sh_str = f"{dataset_shows}"
+    if dataset_shows == SHOWS_FILE:
+        dataset_sh_str = "default"
+
+    dataset_ep_str = f"{dataset_episodes}"
+    if dataset_episodes == EPISODES_FILE:
+        dataset_ep_str = "default"
+    return render_template(
+        'scrapping.html',
+        title="Скраппинг",
+        dataset_shows=dataset_sh_str,
+        dataset_episodes=dataset_ep_str,
+        n_processes=n_processes,
+        is_scrapping=is_scrapping
+    ).encode(encoding='UTF-8')
+
+
+@app.route('/database')
+def database():
+    global dataset_episodes, dataset_shows
+    dataset_sh_str = f"{dataset_shows}"
+    if dataset_shows == SHOWS_FILE:
+        dataset_sh_str = "default"
+
+    dataset_ep_str = f"{dataset_episodes}"
+    if dataset_episodes == EPISODES_FILE:
+        dataset_ep_str = "default"
+    return render_template(
+        'database.html',
+        title="Запись в БД",
+        dataset_shows=dataset_sh_str,
+        dataset_episodes=dataset_ep_str
+    ).encode(encoding='UTF-8')
 
 @app.route('/')
 def home():
@@ -738,15 +780,22 @@ def api_years_3():
 
 @app.route('/api/dataset/shows', methods=['POST'])
 def api_dataset_shows():
-    file_name = request.get_data().decode("UTF-8").split('filename="')[1].split('"')[0]
-    print(file_name)
-    global dataset_shows, dataset_episodes
-    files = os.listdir(path="./datasets/custom")
-    print(files)
-    if file_name != "" and file_name in files:
-        file_name = f"datasets/custom/{file_name}"
+    global dataset_episodes, dataset_shows
 
-        dataset_shows = file_name
+    file_name = request.get_data().decode("UTF-8").split('name="shows_file_text"')[1].split('------Web')[0].strip()
+    if file_name == "default":
+        dataset_shows = SHOWS_FILE
+    else:
+        if file_name == "":
+            file_name = request.get_data().decode("UTF-8").split('filename="')[1].split('"')[0]
+        print(file_name)
+
+        files = os.listdir(path="./datasets/custom")
+        print(files)
+        if file_name != "" and file_name in files:
+            file_name = f"datasets/custom/{file_name}"
+
+            dataset_shows = file_name
 
     dataset_sh_str = f"{dataset_shows}"
     if dataset_shows == SHOWS_FILE:
@@ -765,15 +814,23 @@ def api_dataset_shows():
 
 @app.route('/api/dataset/episodes', methods=['POST'])
 def api_dataset_episodes():
-    file_name = request.get_data().decode("UTF-8").split('filename="')[1].split('"')[0]
-    print(file_name)
     global dataset_episodes, dataset_shows
-    files = os.listdir(path="./datasets/custom")
-    print(files)
-    if file_name != "" and file_name in files:
-        file_name = f"datasets/custom/{file_name}"
 
-        dataset_episodes = file_name
+    file_name = request.get_data().decode("UTF-8").split('name="shows_episode_text"')[1].split('------Web')[0].strip()
+
+    if file_name == "default":
+        dataset_episodes = EPISODES_FILE
+    else:
+        if file_name == "":
+            file_name = request.get_data().decode("UTF-8").split('filename="')[1].split('"')[0]
+        print(file_name)
+
+        files = os.listdir(path="./datasets/custom")
+        print(files)
+        if file_name != "" and file_name in files:
+            file_name = f"datasets/custom/{file_name}"
+
+            dataset_episodes = file_name
 
     dataset_sh_str = f"{dataset_shows}"
     if dataset_shows == SHOWS_FILE:
@@ -790,5 +847,53 @@ def api_dataset_episodes():
     ).encode(encoding='UTF-8')
 
 
+@app.route('/api/scrapping', methods=['POST'])
+def api_scrapping():
+    global dataset_episodes, dataset_shows, n_processes, is_scrapping
+    if not is_scrapping:
+        try:
+            is_scrapping = True
+            n_processes = int(request.form['select_procs'])
+            if request.form['submit'] == 'shows':
+                processes = [Process(target=scrap_shows, args=(dataset_shows.split(".csv")[0] + f"({i+1}).csv",
+                                                               abs(int(i * NUMBER_OF_SHOWS / n_processes) - 1),
+                                                               int(i + 1 * NUMBER_OF_SHOWS / n_processes) - 1,)) for i in range(n_processes)]
+                for pr in processes:
+                    pr.start()
+                for pr in processes:
+                    pr.join()
+            elif request.form['submit'] == 'episodes':
+                processes = [Process(target=scrap_episodes, args=(
+                    dataset_episodes.split(".csv")[0] + f"({i+1}).csv",
+                    abs(int(i * NUMBER_OF_EPISODES / n_processes) - 1),
+                    int(i + 1 * NUMBER_OF_EPISODES / n_processes) - 1,)) for i in range(n_processes)]
+
+                for pr in processes:
+                    pr.start()
+                for pr in processes:
+                    pr.join()
+        except:
+            print("Окончание")
+        finally:
+            is_scrapping = False
+
+
+    dataset_sh_str = f"{dataset_shows}"
+    if dataset_shows == SHOWS_FILE:
+        dataset_sh_str = "default"
+
+    dataset_ep_str = f"{dataset_episodes}"
+    if dataset_episodes == EPISODES_FILE:
+        dataset_ep_str = "default"
+    return render_template(
+        'scrapping.html',
+        title="Скраппинг",
+        dataset_shows=dataset_sh_str,
+        dataset_episodes=dataset_ep_str,
+        n_processes=n_processes,
+        is_scrapping=is_scrapping
+    ).encode(encoding='UTF-8')
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

@@ -1,0 +1,42 @@
+{% extends 'base.html'  %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+{% endblock %}
+
+{% block loading_text %}
+Идет<a href="http://localhost:8080/#/">cкраппинг</a>, чтобы продолжить нажмите кнопку.
+{% endblock %}
+
+{% block content %}
+<div class="p-3 pb-md-4 mx-auto text-center">
+    <h1 class="display-4 fw-normal">Скраппинг</h1>
+    <p>Для эпизодов на данный момент используется датасет: <b>{{ dataset_episodes }}</b></h4></p>
+    <p>Для шоу на данный момент используется датасет: <b>{{ dataset_shows }}</b></p>
+    <div class="mb-3">
+        <form action="/api/scrapping" method="post" accept-charset="utf-8">
+            <label for="select_procs" class="form-label">Выберите число процессов (<b>{{ n_processes }}</b>)</label>
+            {% if is_scrapping %}
+            <h2><b>Идет скраппинг - для просмотра посетитите <a href="http://localhost:8080/#/">Selenoid UI</a>. Для остановки зайдите в сессию и закройте браузер.</b></h2>
+            {% else %}
+            <select name="select_procs" class="form-select" id="select_procs">
+                <option selected="" value="1">1</option>
+                <option value=2>2</option>
+                <option value=3>3</option>
+                <option value=4>4</option>
+            </select>
+            <button class="w-10 btn btn-lg btn-outline-primary mt-xl-2" name="submit" value="shows">Начать сбор шоу</button>
+            <button class="w-10 btn btn-lg btn-outline-primary mt-xl-2" name="submit" value="episodes">Начать сбор эпизодов</button>
+            {% endif %}
+        </form>
+    </div>
+
+</div>
+{% endblock %}

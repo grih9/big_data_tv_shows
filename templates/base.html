@@ -42,9 +42,9 @@
 
       <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
         <li><a href="{{ url_for('home') }}" class="nav-link px-2 link-secondary">Главная страница</a></li>
-        <li><a href="#" class="nav-link px-2 link-dark">Скраппинг</a></li>
+        <li><a href="{{ url_for('scrapping') }}" class="nav-link px-2 link-dark">Скраппинг</a></li>
         <li><a href="{{ url_for('dataset') }}" class="nav-link px-2 link-dark">Датасет</a></li>
-        <li><a href="#" class="nav-link px-2 link-dark">Общее</a></li>
+        <li><a href="{{ url_for('database') }}" class="nav-link px-2 link-dark">База данных</a></li>
         <li><a href="{{ url_for('dashboard') }}" class="nav-link px-2 link-dark" onclick="loading();">Графики</a></li>
       </ul>
     </header>
@@ -53,7 +53,7 @@
         <h2>Загрузка...</h2>
         <div style="position:absolute; bottom:120px; left: 30%">
             <H3>
-                Загрузка может занять до минуты.
+                {% block loading_text %}{% endblock %}
             <a href="{{ url_for('home') }}">Вернуться назад</a>
             </H3>
         </div>

@@ -7,13 +7,13 @@ from datetime import datetime
 
 from selenium.webdriver.common.by import By
 
-from constants import DRIVER_PATH, BASE_URL
+from constants import DRIVER_PATH, BASE_URL, NUMBER_OF_SHOWS, SELENOID_URL, SELENOID_CAPABILITIES
 from scrapper.episodes import get_episode_data
 
 # 49833  42140
 START_ID = 98573
 
-def get_show_data(driver):
+def get_show_data(driver, id):
     show_data = {"show_id": 0, "title": "", "original_title": "", "status": "", "auditory": 0, "rating_myshows": 0.0,
                  "rating_count": 0, "rating_kinopoisk": 0.0, "kinopoisk_count": 0, "rating_imdb": 0.0, "imdb_count": 0,
                  "country": [], "genre": [], "channel": "", "total_length": 0, "episode_length": 0, "dates": "",
@@ -143,34 +143,35 @@ def get_show_data(driver):
         season_data = season.accessible_name.split(" сезон ")
         show_data["episodes_in_season"].append(season_data[1])
 
-    return show_data
+    return show_data, True
 
-def scrap_shows(start_id=START_ID):
-    service = Service(DRIVER_PATH)
-    driver = webdriver.Chrome(service=service)
+
+def scrap_shows(file, start_id=START_ID, end_id=NUMBER_OF_SHOWS):
+    driver = webdriver.Remote(
+        command_executor=SELENOID_URL,
+        desired_capabilities=SELENOID_CAPABILITIES)
     show_data = {"show_id": 0, "title": "", "original_title": "", "status": "", "auditory": 0, "rating_myshows": 0.0,
                  "rating_count": 0, "rating_kinopoisk": 0.0, "kinopoisk_count": 0, "rating_imdb": 0.0, "imdb_count": 0,
                  "country": [], "genre": [], "channel": "", "total_length": 0, "episode_length": 0, "dates": "",
                  "actors": [], "seasons": 0, "episodes_in_season": []}
     print(f"Сборка сериалов со {start_id=}")
-    time_start = datetime.now()
     try:
-        file = open("../datasets/tvshows.csv", "x")
+        #file = open("../datasets/tvshows.csv", "x")
+        write_file = open(file, "x")
         csv_writer = csv.writer(file)
-        csv_writer.writerow(list(show_data.keys()))
-        file.close()
+        #csv_writer.writerow(list(show_data.keys()))
+        write_file.close()
     except Exception as e:
         print("Файл уже создан")
-
-    with open("tvshows.csv", "a", encoding="utf-8", newline='') as write_file:
+    with open(file, "a", encoding="utf-8", newline='') as write_file:
         csv_writer = csv.writer(write_file)
-        for id in range(start_id, 200000):
+        for id in range(start_id, end_id + 1):
             driver.get(BASE_URL + f"/{id}/")
-            show_data, is_true = get_show_data(driver)
+            show_data, is_true = get_show_data(driver, id)
             if not is_true:
                 continue
             csv_writer.writerow(list(show_data.values()))
 
-    print(f"Сбор сериалов окончен со {start_id=}")
-    time_end = datetime.now()
-    print(f"Затрачено времени: {time_end - time_start}")
+    # print(f"Сбор сериалов окончен со {start_id=}")
+    # time_end = datetime.now()
+    # print(f"Затрачено времени: {time_end - time_start}")

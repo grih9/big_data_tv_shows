@@ -7,7 +7,7 @@ from datetime import datetime
 from selenium.webdriver.common.by import By
 
 from connection_data import MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB
-from constants import DRIVER_PATH, BASE_URL
+from constants import DRIVER_PATH, BASE_URL, SELENOID_CAPABILITIES, SELENOID_URL
 from wrappers.MongoConnector import MongoConnector
 
 
@@ -90,14 +90,17 @@ def get_episode_data(driver, id, auditory_min=3):
 
 
 def scrap_episodes(file, start_id=0, end_id=18500000):
-    service = Service(DRIVER_PATH)
-    driver = webdriver.Chrome(service=service)
+    # service = Service(DRIVER_PATH)
+    # driver = webdriver.Chrome(service=service)
+    driver = webdriver.Remote(
+        command_executor=SELENOID_URL,
+        desired_capabilities=SELENOID_CAPABILITIES)
     episode_data = {"episode_id": 0, "show": "", "episode_title": "", "season": 0, "episode": 0, "auditory": 0,
                     "auditory_rate": 0.0, "rating_myshows": 0.0, "rating_count": 0, "episode_length": 0, "date": "",
                     "number_of_comments": 0}
 
     print(f"Сборка эпизодов со {start_id=} по {end_id=}")
-    time_start = datetime.now()
+    # time_start = datetime.now()
     try:
         write_file = open(file, "x")
         csv_writer = csv.writer(write_file)
@@ -122,9 +125,9 @@ def scrap_episodes(file, start_id=0, end_id=18500000):
             if is_true:
                 csv_writer.writerow(list(episode_data.values()))
 
-    print(f"Сбор эпизодов окончен со {start_id=} по {end_id}")
-    time_end = datetime.now()
-    print(f"Затрачено времени: {time_end - time_start}")
+    # print(f"Сбор эпизодов окончен со {start_id=} по {end_id}")
+    # time_end = datetime.now()
+    # print(f"Затрачено времени: {time_end - time_start}")
 
 
 def scrap_seasons_episodes_from_show(show_id, file_name, driver):
@@ -168,24 +171,33 @@ def scrap_episodes_from_db(pr_type, auditory=1000, condition=None):
     shows2 = shows[len(shows)//3:2*len(shows)//3]
     shows3 = shows[2*len(shows)//3:]
     if pr_type == 1:
-        service = Service(DRIVER_PATH)
-        driver = webdriver.Chrome(service=service)
+        # service = Service(DRIVER_PATH)
+        # driver = webdriver.Chrome(service=service)
+        driver = webdriver.Remote(
+            command_executor=SELENOID_URL,
+            desired_capabilities=SELENOID_CAPABILITIES)
         print(len(shows1))
         for show in shows1:
             show_id = show["show_id"]
             #scrap_seasons_episodes_from_show(show_id, "episodes5.csv", driver)
             scrap_seasons_episodes_from_show(show_id, "episodes8.csv", driver)
     elif pr_type == 2:
-        service = Service(DRIVER_PATH)
-        driver = webdriver.Chrome(service=service)
+        # service = Service(DRIVER_PATH)
+        # driver = webdriver.Chrome(service=service)
+        driver = webdriver.Remote(
+            command_executor=SELENOID_URL,
+            desired_capabilities=SELENOID_CAPABILITIES)
         print(len(shows2))
         for show in shows2:
             show_id = show["show_id"]
             scrap_seasons_episodes_from_show(show_id, "episodes9.csv", driver)
             #scrap_seasons_episodes_from_show(show_id, "episodes6.csv", driver)
     elif pr_type == 3:
-        service = Service(DRIVER_PATH)
-        driver = webdriver.Chrome(service=service)
+        # service = Service(DRIVER_PATH)
+        # driver = webdriver.Chrome(service=service)
+        driver = webdriver.Remote(
+            command_executor=SELENOID_URL,
+            desired_capabilities=SELENOID_CAPABILITIES)
         print(len(shows3))
         for show in shows3:
             show_id = show["show_id"]

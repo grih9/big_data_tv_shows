@@ -10,8 +10,6 @@ if __name__ == '__main__':
     """
     #write_tv_shows_data(SHOWS_FILE)
 
-
-
     """
         write episodes to db
     """
