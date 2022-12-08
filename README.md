@@ -1,13 +1,16 @@
 # MyShows Analysis
 ## Как запустить?
-База (только графики):
+<b>База (только графики)</b>:
 * docker pull grih9/myshows_analysis:latest
 * docker run -p 5000:5000 flask-app
 
-Расширенный (включая скрапинг):
+<b>Расширенный (включая скрапинг)</b>:
 * Клонировать репозиторий (достаточно файлов docker-compose и browsers.json)
 * docker pull selenoid/vnc_chrome:100.0
 * docker-compose up -d
+
+<b>Скопировать датасет</b>:
+* docker cp *container id*:/app/datasets .
 
 
 Доступ через браузер - http://127.0.0.1:5000/
@@ -15,8 +18,7 @@
 Selenoid UI - http://127.0.0.1:8080/
 
 
-
-Полный доступ:
+<b>Полный доступ</b>:
 * Запросить конфигурационный файл для доступа к БД (telegram <b>@grih9</b>, vk <b>@grih9</b>)
 * Клонировать репозиторий
 * Доступ ко всем скриптам через main.py
