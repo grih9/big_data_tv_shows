@@ -1,4 +1,7 @@
 # MyShows Analysis
+
+https://myshows.me/
+
 ## Как запустить?
 <b>База (только графики)</b>:
 * docker pull grih9/myshows_analysis:latest
@@ -16,6 +19,8 @@
 Доступ через браузер - http://127.0.0.1:5000/
 
 Selenoid UI - http://127.0.0.1:8080/
+
+Docker Hub - https://hub.docker.com/repository/docker/grih9/myshows_analysis
 
 
 <b>Полный доступ</b>:
