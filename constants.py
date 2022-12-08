@@ -9,7 +9,8 @@ SELENOID_CAPABILITIES = {
     "browserVersion": "100.0",
     "selenoid:options": {
         "enableVideo": False,
-        "enableVNC": True
+        "enableVNC": True,
+        "sessionTimeout": "1m"
     }
 }
 

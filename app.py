@@ -38,8 +38,7 @@ def graphs_imdb():
                   'Biography', 'Sport', 'Western', 'Short', 'Musical']
     controls = {
         "reviews": Slider(title="Минимальное число зрителей", value=10, start=10, end=100000, step=50, width=470),
-        "info": TextAreaInput(title="Информация", value="Информация об оценках зрителей.\n\n"
-                                                        "По горизонтали оценки выбранного источника (IMDB/Кинопоиск),\n"
+        "info": TextAreaInput(title="Информация об оценках зрителей:", value="По горизонтали оценки выбранного источника (IMDB/Кинопоиск),\n"
                                                         "по вертикали оценки пользователей MyShows.\n"
                                                         "Выбор источника осуществляется с помощью выпадающего меню в правом верхнем углу.\n"
                                                         "С помошью ползунка определяется минимальное число зрителей, которые смотрят сериал "
@@ -119,12 +118,12 @@ def graphs_kinopoisk():
                   'Biography', 'Sport', 'Western', 'Short', 'Musical']
     controls = {
         "reviews": Slider(title="Минимальное число зрителей", value=10, start=10, end=100000, step=50, width=480),
-        "info": TextAreaInput(title="Информация", value="Информация об оценках зрителей.\n\n"
-                                                        "По горизонтали оценки выбранного источника (IMDB/Кинопоиск),\n"
-                                                        "по вертикали оценки пользователей MyShows.\n"
-                                                        "Выбор источника осуществляется с помощью выпадающего меню в правом верхнем углу.\n"
-                                                        "С помошью ползунка определяется минимальное число зрителей, которые смотрят сериал "
-                                                        "(по данным MyShows), для которых будет отмечена информация на графике",
+        "info": TextAreaInput(title="Информация об оценках зрителей:", value=
+        "По горизонтали оценки выбранного источника (IMDB/Кинопоиск),\n"
+        "по вертикали оценки пользователей MyShows.\n"
+        "Выбор источника осуществляется с помощью выпадающего меню в правом верхнем углу.\n"
+        "С помошью ползунка определяется минимальное число зрителей, которые смотрят сериал "
+        "(по данным MyShows), для которых будет отмечена информация на графике",
                               width=470, rows=10, disabled=True, css_classes=["form-control"])
     }
 
@@ -200,11 +199,11 @@ def graphs_channels():
         "min_year": Spinner(title="Начальная дата", low=1970, high=2023, value=1970, step=1),
         "max_year": Spinner(title="Конечная дата", low=1970, high=2023, value=2023, step=1),
         "country": Select(title="Страна", value="Все", options=country_list),
-        "info": TextAreaInput(title="Информация",
-                              value="Информация о сериалах и шоу по годам.\n\n"
-                                    "На первом графике изображено число сериалом вышедших и завершившихся в указанный год.\n"
-                                    "На втором графике изображено число зрителей сериалов, вышедших в указанный год.\n"
+        "info": TextAreaInput(title="Информация о каналах:",
+                              value="На первом графике изображено число сериалов, выпущенных каналами (первые 30 или меньше).\n"
+                                    "На втором графике изображено число зрителей сериалов, вышедших на указанном канале.\n"
                                     "На втором графике изображена средняя оценка сериалов, вышедших в указанный год.\n"
+                                    "На третьем графике изображено среднее отношени числа зрителей на сериал для указанного канала.\n"
                                     "С помошью полей управления можно производить фильтрацию данных.\n",
                               width=370, rows=15, disabled=True, css_classes=["form-control"])
     }
@@ -468,10 +467,10 @@ def graphs_years():
         "min_year": Spinner(title="Начальная дата", low=1970, high=2022, value=1970, step=1),
         "max_year": Spinner(title="Конечная дата", low=1970, high=2022, value=2022, step=1),
         "country": Select(title="Страна", value="Все", options=country_list),
-        "info": TextAreaInput(title="Информация",
-                              value="Информация о каналах, на которых транслировались шоу или сериалы.\n\n"
-                                    "По горизонтали отображаются каналы/студии,\n"
-                                    "по вертикали число сериалов/шоу данного канала.\n"
+        "info": TextAreaInput(title="Информация о сериалах и шоу по годам:",
+                              value="На первом графике изображено число сериалов, вышедших и завершившихся в указанный год.\n"
+                                    "На втором графике изображена средняя оценка сериалов, вышедших в указанный год.\n"
+                                    "На третьем графике изображено число зрителей сериалов, вышедших в указанный год.\n"
                                     "С помошью полей управления можно производить фильтрацию данных.\n",
                               width=320, rows=20, disabled=True, css_classes=["form-control"])
     }
@@ -683,6 +682,72 @@ def dashboard():
         title_gr="Dashboard",
     ).encode(encoding='UTF-8')
 
+@app.route('/dashboard/other')
+def graphs_others():
+    source = ColumnDataSource()
+
+    fig = figure(height=300, width=370, tooltips=[("Число сериалов", "@y"), ("Число сезонов", "@x")], x_range=(0.5, 10.5))
+    fig.line(x="x", y="y", source=source, color="blue")
+    fig.circle(x="x", y="y", source=source, size=3, color="blue")
+    fig.xaxis.axis_label = "Число сезонов"
+    fig.yaxis.axis_label = "Число сериалов"
+
+    shows = DATA
+    x = [elem["number_of_seasons"] for elem in shows]
+
+    list_x = list(set(x))
+
+    source.data = dict(
+        x=list_x,
+        y=[x.count(elem) for elem in list_x],
+    )
+
+    source2 = ColumnDataSource()
+
+    fig2 = figure(height=300, width=370, x_range=[f"{i*10+1}-{(i+1) * 10}" for i in range(10)])
+    fig2.vbar(x="x", top="top", source=source2, color="blue", width=0.9)
+    fig2.xaxis.axis_label = "Процент оценок сериала"
+    fig2.yaxis.axis_label = "Число сериалов"
+    fig2.xaxis.major_label_orientation = math.pi / 3
+
+    data = [elem["rating_percent"] for elem in shows]
+
+    source2.data = dict(
+        x=[f"{i*10+1}-{(i+1) * 10}" for i in range(10)],
+        top=[sum([1 if ((i + 1) * 10) >= elem > i * 10 else 0 for elem in data]) for i in range(10)],
+    )
+
+    source3 = ColumnDataSource()
+
+    data = [elem["status"] for elem in shows]
+    x_list = list(set(data))
+    y = [data.count(elem) for elem in x_list]
+    fig3 = figure(height=300, width=370, x_range=x_list)
+    fig3.vbar(x="x", top="top", source=source3, color="blue", width=0.9)
+    fig3.xaxis.axis_label = "Статус"
+    fig3.yaxis.axis_label = "Число сериалов"
+    fig3.xaxis.major_label_orientation = math.pi / 3
+
+    fig3.x_range.factors = x_list
+
+    source3.data = dict(
+        x=x_list,
+        top=y,
+    )
+
+    layout_row = column([fig, fig2, fig3])
+
+    script, div = components(layout_row)
+
+    return render_template(
+        'dashboard_others.html',
+        plot_script=script,
+        plot_div=div,
+        js_resources=INLINE.render_js(),
+        css_resources=INLINE.render_css(),
+        title_gr="Другое",
+    ).encode(encoding='UTF-8')
+
 
 @app.route('/dataset')
 def dataset():
@@ -860,7 +925,9 @@ def api_scrapping():
                                                                int(i + 1 * NUMBER_OF_SHOWS / n_processes) - 1,)) for i in range(n_processes)]
                 for pr in processes:
                     pr.start()
+                    print(f"процесс {pr} стартовал")
                 for pr in processes:
+                    print(f"процесс {pr} здесь")
                     pr.join()
             elif request.form['submit'] == 'episodes':
                 processes = [Process(target=scrap_episodes, args=(
@@ -870,7 +937,9 @@ def api_scrapping():
 
                 for pr in processes:
                     pr.start()
+                    print(f"процесс {pr} стартовал")
                 for pr in processes:
+                    print(f"процесс {pr} здесь")
                     pr.join()
         except:
             print("Окончание")

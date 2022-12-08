@@ -3,6 +3,7 @@ from multiprocessing import Process
 from analyze_dataset.scv_analyzer import write_tv_shows_data, write_episodes_from_file
 from constants import SHOWS_FILE
 from scrapper.episodes import scrap_episodes_from_db, scrap_episodes
+from scrapper.shows import scrap_shows
 
 if __name__ == '__main__':
     """
@@ -11,7 +12,7 @@ if __name__ == '__main__':
     #write_tv_shows_data(SHOWS_FILE)
 
     """
-        write episodes to db
+        write episodes to db parallel
     """
     #for file in ["datasets/episodes.csv", "datasets/episodes2.csv", "datasets/episodes3.csv", "datasets/episodes4.csv"]:
     # for file in ["datasets/episodes5.csv", "datasets/episodes6.csv", "datasets/episodes7.csv"]:
@@ -30,10 +31,10 @@ if __name__ == '__main__':
     """
         scrap shows
     """
-    # scrap_shows(0)
+    scrap_shows(file="test.csv", start_id=10000)
 
     """
-        scrap episodes
+        scrap episodes from db with condition
     """
 
     #scrap_episodes_from_db(1000)
