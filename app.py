@@ -779,7 +779,7 @@ def scrapping():
         dataset_ep_str = "default"
     return render_template(
         'scrapping.html',
-        title="Скраппинг",
+        title="Скрапинг",
         dataset_shows=dataset_sh_str,
         dataset_episodes=dataset_ep_str,
         n_processes=n_processes,
@@ -956,7 +956,7 @@ def api_scrapping():
         dataset_ep_str = "default"
     return render_template(
         'scrapping.html',
-        title="Скраппинг",
+        title="Скрапинг",
         dataset_shows=dataset_sh_str,
         dataset_episodes=dataset_ep_str,
         n_processes=n_processes,

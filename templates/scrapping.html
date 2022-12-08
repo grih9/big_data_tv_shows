@@ -17,14 +17,14 @@
 
 {% block content %}
 <div class="p-3 pb-md-4 mx-auto text-center">
-    <h1 class="display-4 fw-normal">Скраппинг</h1>
+    <h1 class="display-4 fw-normal">Скрапинг</h1>
     <p>Для эпизодов на данный момент используется датасет: <b>{{ dataset_episodes }}</b></h4></p>
     <p>Для шоу на данный момент используется датасет: <b>{{ dataset_shows }}</b></p>
     <div class="mb-3">
         <form action="/api/scrapping" method="post" accept-charset="utf-8">
             <label for="select_procs" class="form-label">Выберите число процессов (<b>{{ n_processes }}</b>)</label>
             {% if is_scrapping %}
-            <h2><b>Идет скраппинг - для просмотра посетитите <a href="http://localhost:8080/#/">Selenoid UI</a>. Для остановки зайдите в сессию и закройте браузер.</b></h2>
+            <h2><b>Идет скрапинг - для просмотра посетитите <a href="http://localhost:8080/#/">Selenoid UI</a>. Для остановки зайдите в сессию и закройте браузер.</b></h2>
             {% else %}
             <select name="select_procs" class="form-select" id="select_procs">
                 <option selected="" value="1">1</option>

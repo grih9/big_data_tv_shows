@@ -3,7 +3,7 @@
 * docker pull grih9/myshows_analysis:latest
 * docker run -p 5000:5000 flask-app
 
-Расширенный (включая скраппинг):
+Расширенный (включая скрапинг):
 * Клонировать репозиторий (достаточно файлов docker-compose и browsers.json)
 * docker pull selenoid/vnc_chrome:100.0
 * docker-compose up -d
