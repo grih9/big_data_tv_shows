@@ -2,7 +2,7 @@
 ## Как запустить?
 <b>База (только графики)</b>:
 * docker pull grih9/myshows_analysis:latest
-* docker run -p 5000:5000 flask-app
+* docker run -p 5000:5000 grih9/myshows_analysis:latest
 
 <b>Расширенный (включая скрапинг)</b>:
 * Клонировать репозиторий (достаточно файлов docker-compose и browsers.json)
