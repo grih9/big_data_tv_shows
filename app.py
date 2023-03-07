@@ -18,10 +18,23 @@ from scrapper.episodes import scrap_episodes
 from scrapper.shows import scrap_shows
 from wrappers.MongoConnector import MongoConnector
 
+from prometheus_client import make_wsgi_app
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from werkzeug.serving import run_simple
+from flask_prometheus_metrics import register_metrics
+
+#
+# Constants
+#
+
+CONFIG = {"version": "v0.1.2", "config": "staging"}
+
 app = Flask(__name__)
 
-mongo = MongoConnector(MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB)
-DATA = mongo.get_shows_by_auditory(auditory=10)
+mongo = None
+DATA = None
+#mongo = MongoConnector(MONGO_HOST, MONGO_PORT, MONGO_USERNAME, MONGO_PASSWORD, MONGO_DB)
+#DATA = mongo.get_shows_by_auditory(auditory=10)
 
 dataset_shows = SHOWS_FILE
 dataset_episodes = EPISODES_FILE
@@ -964,5 +977,42 @@ def api_scrapping():
     ).encode(encoding='UTF-8')
 
 
+def create_app(config):
+    """
+    Application factory
+    """
+
+    register_metrics(app, app_version=config["version"], app_config=config["config"])
+    return app
+
+
+#
+# Dispatcher
+#
+
+
+def create_dispatcher() -> DispatcherMiddleware:
+    """
+    App factory for dispatcher middleware managing multiple WSGI apps
+    """
+    main_app = create_app(config=CONFIG)
+    return DispatcherMiddleware(main_app.wsgi_app, {"/metrics": make_wsgi_app()})
+
+
+#
+# Run
+#
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
+    run_simple(
+        "0.0.0.0",
+        5000,
+        create_dispatcher(),
+        use_reloader=True,
+        use_debugger=True,
+        use_evalex=True,
+    )
+
+# if __name__ == "__main__":
+#     # app.run(host='0.0.0.0', debug=True)
+#     run_simple(hostname="0.0.0.0", port=5000, application=dispatcher)

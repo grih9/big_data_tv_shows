@@ -1,5 +1,13 @@
 version: '3'
 services:
+  prometheus:
+    image: prom/prometheus:latest
+    network_mode: bridge
+    restart: always
+    ports:
+    - "9090:9090"
+    volumes:
+    - "./prometheus.yml:/etc/prometheus/prometheus.yml"
   selenoid:
     image: "aerokube/selenoid"
     network_mode: bridge
@@ -24,3 +32,5 @@ services:
       restart: always
       ports:
         - "5000:5000"
+      volumes:
+        - "./app.py:/app.py"
