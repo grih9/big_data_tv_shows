@@ -12,7 +12,10 @@ https://myshows.me/
 * docker pull selenoid/vnc_chrome:100.0
 * docker-compose up -d
 
-<b>Скопировать датасет</b>:
+<b>Добавить датасет</b>:
+* docker cp *dataset.csv* *container id*:/app/datasets/custom 
+
+<b>Скопировать датасеты</b>:
 * docker cp *container id*:/app/datasets .
 
 
