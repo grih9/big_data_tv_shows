@@ -23,13 +23,13 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from werkzeug.serving import run_simple
 from flask_prometheus_metrics import register_metrics
 
-#
-# Constants
-#
+import flask_monitoringdashboard as dashboard
 
 CONFIG = {"version": "v0.1.2", "config": "staging"}
 
 app = Flask(__name__)
+dashboard.config.init_from(file='./flask_dashboard.cfg')
+dashboard.bind(app)
 
 mongo = None
 DATA = None
@@ -978,30 +978,14 @@ def api_scrapping():
 
 
 def create_app(config):
-    """
-    Application factory
-    """
-
     register_metrics(app, app_version=config["version"], app_config=config["config"])
     return app
 
 
-#
-# Dispatcher
-#
-
-
 def create_dispatcher() -> DispatcherMiddleware:
-    """
-    App factory for dispatcher middleware managing multiple WSGI apps
-    """
     main_app = create_app(config=CONFIG)
     return DispatcherMiddleware(main_app.wsgi_app, {"/metrics": make_wsgi_app()})
 
-
-#
-# Run
-#
 
 if __name__ == "__main__":
     run_simple(
